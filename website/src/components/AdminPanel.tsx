@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useAppStore } from '../store';
-import { LogOut, Trash2, Settings, AlertTriangle, CheckCircle, Users, Gift, Tag, Activity, Wrench } from 'lucide-react';
+import { LogOut, Trash2, Settings, AlertTriangle, CheckCircle, Users, Gift, Tag, Activity, Wrench, Clock } from 'lucide-react';
 
 export default function AdminPanel() {
-  const { machine, tickets, users, rewards, logout, adminAddBottles, acceptTicket, completeTicket, updateRewardStatus, addReward, deleteReward } = useAppStore();
+  const { machine, tickets, users, rewards, logout, adminAddBottles, acceptTicket, completeTicket, updateRewardStatus, addReward, deleteReward, setMachineCapacity } = useAppStore();
 
-  const [tab, setTab] = useState<'ops' | 'users' | 'catalog'>('ops');
+  const [tab, setTab] = useState<'ops' | 'users' | 'catalog' | 'logs'>('ops');
   const [selectedUser, setSelectedUser] = useState('');
   const [bottleAmount, setBottleAmount] = useState('10');
   const [newName, setNewName] = useState('');
   const [newCost, setNewCost] = useState('');
   const [newDesc, setNewDesc] = useState('');
+  const [editCapacity, setEditCapacity] = useState(machine.capacity.toString());
 
   const handleAddBottles = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,10 +26,18 @@ export default function AdminPanel() {
     setNewName(''); setNewCost(''); setNewDesc('');
   };
 
+  const handleUpdateCapacity = () => {
+    const cap = parseInt(editCapacity);
+    if (!isNaN(cap) && cap >= 0 && cap <= 100) {
+      setMachineCapacity(cap);
+    }
+  };
+
   const pendingRewards = users.flatMap(u =>
     u.history.filter(tx => tx.type === 'redeem' && tx.status === 'pending').map(tx => ({ user: u, tx }))
   );
   const studentUsers = users.filter(u => u.role === 'student');
+  const allLogs = users.flatMap(u => u.history.map(tx => ({ user: u, tx }))).sort((a, b) => new Date(b.tx.date).getTime() - new Date(a.tx.date).getTime());
 
   return (
     <div className="flex flex-col min-h-screen bg-[hsl(220,15%,7%)] scanlines overflow-x-hidden relative">
@@ -54,6 +63,7 @@ export default function AdminPanel() {
             { key: 'ops', label: 'SYS_STATUS', icon: <Settings className="w-3 h-3" /> },
             { key: 'users', label: 'PLAYER_DATA', icon: <Users className="w-3 h-3" /> },
             { key: 'catalog', label: 'LOOT_TABLE', icon: <Tag className="w-3 h-3" /> },
+            { key: 'logs', label: 'GLOBAL_LOGS', icon: <Clock className="w-3 h-3" /> },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key as typeof tab)}
               className={`font-pixel text-[8px] md:text-[10px] px-4 py-4 border-b-4 transition-colors whitespace-nowrap flex items-center gap-2 ${
@@ -79,13 +89,19 @@ export default function AdminPanel() {
               <div className="pixel-progress h-5">
                 <div style={{ width: `${machine.capacity}%` }} className="h-full transition-all" />
               </div>
-              <div className="flex justify-between items-center pt-2 border-t border-[hsl(220,10%,16%)]">
+              <div className="flex justify-between items-center pt-2 border-t border-slate-700/50">
                 <span className="font-pixel text-[8px] text-slate-600">STATUS:</span>
                 <span className={`font-pixel text-[9px] px-2 py-1 ${
                   machine.status === 'Online' ? 'bg-green-950/30 text-green-400' :
                   machine.status === 'Full' ? 'bg-red-950/30 text-red-400' :
                   'bg-yellow-950/30 text-yellow-400'
                 }`}>{machine.status.toUpperCase()}</span>
+              </div>
+              <div className="pt-4 border-t border-slate-700/50 flex gap-2 items-center">
+                <input type="number" className="pixel-input w-24 px-2 py-1.5 text-[10px]" value={editCapacity} onChange={e => setEditCapacity(e.target.value)} min="0" max="100" />
+                <button onClick={handleUpdateCapacity} className="pixel-btn bg-cyan-700 hover:bg-cyan-600 text-cyan-100 flex-1 py-1.5 text-[8px]">
+                  OVERRIDE
+                </button>
               </div>
             </div>
 
@@ -226,6 +242,36 @@ export default function AdminPanel() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {tab === 'logs' && (
+          <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-cyan-500/30 p-5 space-y-4">
+            <h3 className="font-pixel text-[9px] text-slate-400 flex items-center gap-2"><Clock className="w-4 h-4 text-cyan-400" /> GLOBAL TRANSACTION LOGS</h3>
+            {allLogs.length === 0 ? (
+              <div className="text-center py-8">
+                <Clock className="w-10 h-10 text-slate-700 mx-auto mb-3" />
+                <span className="font-pixel text-[8px] text-slate-600">BELUM ADA LOG TRANSAKSI</span>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
+                {allLogs.map((log, i) => (
+                  <div key={i} className={`flex justify-between items-center p-3 bg-slate-800/50 border-l-4 ${log.tx.type === 'earn' ? 'border-green-500' : 'border-purple-500'}`}>
+                    <div>
+                      <div className="font-pixel text-[9px] text-slate-300 flex items-center gap-2">
+                        <span>{log.user.name}</span>
+                        <span className="text-slate-500">#{log.user.nim}</span>
+                      </div>
+                      <p className="font-pixel-body text-slate-400 text-sm">{log.tx.desc}</p>
+                      <span className="font-pixel text-[7px] text-slate-600">{log.tx.date}</span>
+                    </div>
+                    <div className={`font-pixel text-[9px] ${log.tx.type === 'earn' ? 'text-green-400' : 'text-purple-400'}`}>
+                      {log.tx.type === 'earn' ? '+' : '-'}{log.tx.amount} XP
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>

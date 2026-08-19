@@ -46,6 +46,7 @@ interface AppState {
   register: (name: string, nim: string, character: string) => void;
   logout: () => void;
   adminAddBottles: (userId: string, bottles: number) => void;
+  setMachineCapacity: (capacity: number) => void;
   acceptTicket: (ticketId: string) => void;
   completeTicket: (ticketId: string) => void;
   redeemReward: (cost: number, itemName: string) => void;
@@ -100,6 +101,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => setCurrentUser(null);
+
+  const setMachineCapacity = (capacity: number) => {
+    let status = machine.status;
+    if (capacity >= 100) status = 'Full';
+    else if (capacity < 100 && machine.status === 'Full') status = 'Online';
+    setMachine({ capacity, status });
+    toast.success(`Kapasitas diubah ke ${capacity}%`);
+  };
 
   const adminAddBottles = (userId: string, bottles: number) => {
     const newCapacity = Math.min(machine.capacity + bottles, 100);
@@ -229,12 +238,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ 
-      currentUser, users, machine, tickets, stats, rewards,
-      login, register, logout, adminAddBottles, 
-      acceptTicket, completeTicket, redeemReward, updateRewardStatus,
-      addReward, deleteReward
-    }}>
+    <AppContext.Provider value={{ currentUser, users, machine, tickets, stats, rewards, login, register, logout, adminAddBottles, setMachineCapacity, acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward }}>
       {children}
     </AppContext.Provider>
   );
