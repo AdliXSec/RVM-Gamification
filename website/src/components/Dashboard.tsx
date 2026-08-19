@@ -126,12 +126,12 @@ export default function Dashboard() {
 
             <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-5">
               <h3 className="font-pixel text-[9px] text-slate-400 mb-4 flex items-center gap-2"><Activity className="w-4 h-4 text-green-500" /> STATUS MESIN RVM</h3>
-              {machine.status === 'Online' && machine.capacity < 100 ? (
+              {machine.status === 'Online' && machine.currentBottles < machine.maxCapacity ? (
                 <div className="pixel-border-green bg-green-950/15 p-4 flex items-center gap-3">
                   <Box className="w-5 h-5 text-green-500" />
                   <div>
                     <span className="font-pixel text-[9px] text-green-400">MESIN TERSEDIA</span>
-                    <p className="font-pixel-body text-slate-500 text-lg">Gedung A, Lantai 1 — Kapasitas {machine.capacity}%</p>
+                    <p className="font-pixel-body text-slate-500 text-lg">Gedung A, Lantai 1 — {machine.currentBottles}/{machine.maxCapacity} Botol</p>
                   </div>
                 </div>
               ) : (
@@ -146,10 +146,10 @@ export default function Dashboard() {
               <div className="mt-4">
                 <div className="flex justify-between mb-1">
                   <span className="font-pixel text-[7px] text-slate-600">KAPASITAS</span>
-                  <span className="font-pixel text-[7px] text-slate-500">{machine.capacity}%</span>
+                  <span className="font-pixel text-[7px] text-slate-500">{Math.round((machine.currentBottles / machine.maxCapacity) * 100)}%</span>
                 </div>
                 <div className="pixel-progress h-3">
-                  <div style={{ width: `${machine.capacity}%` }} className="h-full transition-all" />
+                  <div style={{ width: `${Math.min(100, (machine.currentBottles / machine.maxCapacity) * 100)}%` }} className="h-full transition-all" />
                 </div>
               </div>
             </div>

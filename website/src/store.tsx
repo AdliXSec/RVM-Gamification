@@ -38,7 +38,7 @@ export type RewardItem = {
 interface AppState {
   currentUser: User | null;
   users: User[];
-  machine: { capacity: number; status: 'Online' | 'Full' | 'Maintenance' };
+  machine: { maxCapacity: number; currentBottles: number; status: 'Online' | 'Full' | 'Maintenance' };
   tickets: Ticket[];
   stats: { totalBottles: number; totalCO2: number; totalFilament: number };
   rewards: RewardItem[];
@@ -46,7 +46,7 @@ interface AppState {
   register: (name: string, nim: string, character: string) => void;
   logout: () => void;
   adminAddBottles: (userId: string, bottles: number) => void;
-  setMachineCapacity: (capacity: number) => void;
+  setMachineMaxCapacity: (max: number) => void;
   acceptTicket: (ticketId: string) => void;
   completeTicket: (ticketId: string) => void;
   redeemReward: (cost: number, itemName: string) => void;
@@ -65,7 +65,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     { id: 'u3', name: 'Siti', nim: '120220003', role: 'student', points: 800, character: 'girl.png', history: [] },
     { id: 'u4', name: 'Joko', nim: '120220004', role: 'student', points: 1500, character: 'plague.png', history: [] },
   ]);
-  const [machine, setMachine] = useState<{ capacity: number; status: 'Online' | 'Full' | 'Maintenance' }>({ capacity: 45, status: 'Online' });
+  const [machine, setMachine] = useState<{ maxCapacity: number; currentBottles: number; status: 'Online' | 'Full' | 'Maintenance' }>({ maxCapacity: 250, currentBottles: 45, status: 'Online' });
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [stats, setStats] = useState({ totalBottles: 15420, totalCO2: 616.8, totalFilament: 3084 });
   const [rewards, setRewards] = useState<RewardItem[]>([
@@ -102,32 +102,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => setCurrentUser(null);
 
-  const setMachineCapacity = (capacity: number) => {
+  const setMachineMaxCapacity = (max: number) => {
     let status = machine.status;
-    if (capacity >= 100) status = 'Full';
-    else if (capacity < 100 && machine.status === 'Full') status = 'Online';
-    setMachine({ capacity, status });
-    toast.success(`Kapasitas diubah ke ${capacity}%`);
+    if (machine.currentBottles >= max) status = 'Full';
+    else if (machine.currentBottles < max && machine.status === 'Full') status = 'Online';
+    setMachine({ ...machine, maxCapacity: max, status });
+    toast.success(`Max kapasitas alat diubah menjadi ${max} botol.`);
   };
 
   const adminAddBottles = (userId: string, bottles: number) => {
-    const newCapacity = Math.min(machine.capacity + bottles, 100);
-    const addedCapacity = newCapacity - machine.capacity;
-    if (addedCapacity <= 0) {
+    const newBottles = Math.min(machine.currentBottles + bottles, machine.maxCapacity);
+    const addedBottles = newBottles - machine.currentBottles;
+    if (addedBottles <= 0) {
       toast.error("Mesin sudah penuh! Selesaikan pick-up ticket dulu.");
       return;
     }
 
-    const earnedPoints = addedCapacity * 100;
+    const earnedPoints = addedBottles * 100;
     setStats(prev => ({
-      totalBottles: prev.totalBottles + addedCapacity,
-      totalCO2: prev.totalCO2 + (addedCapacity * 0.04),
-      totalFilament: prev.totalFilament + (addedCapacity * 0.2)
+      totalBottles: prev.totalBottles + addedBottles,
+      totalCO2: prev.totalCO2 + (addedBottles * 0.04),
+      totalFilament: prev.totalFilament + (addedBottles * 0.2)
     }));
 
     setMachine({
-      capacity: newCapacity,
-      status: newCapacity === 100 ? 'Full' : 'Online'
+      ...machine,
+      currentBottles: newBottles,
+      status: newBottles >= machine.maxCapacity ? 'Full' : 'Online'
     });
 
     setUsers(prev => prev.map(u => {
@@ -135,7 +136,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const tx: Transaction = {
           id: Date.now().toString(),
           type: 'earn',
-          desc: `Setor ${addedCapacity} Botol (Admin Input)`,
+          desc: `Setor ${addedBottles} Botol`,
           amount: earnedPoints,
           date: new Date().toLocaleString(),
           status: 'completed'
@@ -148,13 +149,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return u;
     }));
 
-    toast.success(`Berhasil menambahkan ${addedCapacity} botol untuk user.`);
+    toast.success(`Berhasil menambahkan ${addedBottles} botol untuk user.`);
 
-    if (newCapacity >= 80) {
+    const percentage = Math.round((newBottles / machine.maxCapacity) * 100);
+    if (percentage >= 80) {
       if (!tickets.find(t => t.status !== 'Completed')) {
         const newTicket: Ticket = {
           id: `TCK-${Math.floor(Math.random() * 1000)}`,
-          capacityAtIssue: newCapacity,
+          capacityAtIssue: percentage,
           status: 'Pending',
           date: new Date().toLocaleString()
         };
@@ -172,8 +174,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const completeTicket = (ticketId: string) => {
     setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: 'Completed' } : t));
-    setMachine({ capacity: 0, status: 'Online' });
-    toast.success("Evakuasi Selesai. Kapasitas kembali 0% dan mesin Online.");
+    setMachine(prev => ({ ...prev, currentBottles: 0, status: 'Online' }));
+    toast.success("Evakuasi Selesai. Mesin kosong (0 botol) dan Online.");
   };
 
   const redeemReward = (cost: number, itemName: string) => {
@@ -238,7 +240,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AppContext.Provider value={{ currentUser, users, machine, tickets, stats, rewards, login, register, logout, adminAddBottles, setMachineCapacity, acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward }}>
+    <AppContext.Provider value={{ currentUser, users, machine, tickets, stats, rewards, login, register, logout, adminAddBottles, setMachineMaxCapacity, acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward }}>
       {children}
     </AppContext.Provider>
   );
