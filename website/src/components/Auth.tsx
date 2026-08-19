@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAppStore } from '../store';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Recycle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 const CHARACTERS = [
   'ninja.png', 'knight.png', 'girl.png', 'banana.png', 'plague.png', 'shepherd.png'
@@ -9,7 +9,6 @@ const CHARACTERS = [
 
 export default function Auth({ mode }: { mode: 'login' | 'register' }) {
   const { login, register } = useAppStore();
-  const navigate = useNavigate();
   const [tab, setTab] = useState<'student' | 'admin'>(mode === 'login' ? 'student' : 'student');
   const [name, setName] = useState('');
   const [nim, setNim] = useState('');

@@ -1,4 +1,4 @@
-import { ArrowRight, Recycle, Zap, Trophy, Shield, Cpu, Activity, Star } from 'lucide-react';
+import { ArrowRight, Zap, Trophy, Shield, Cpu, Activity, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 

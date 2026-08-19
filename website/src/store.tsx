@@ -43,7 +43,7 @@ interface AppState {
   stats: { totalBottles: number; totalCO2: number; totalFilament: number };
   rewards: RewardItem[];
   login: (name: string, role: 'student' | 'admin') => void;
-  register: (name: string, character: string) => void;
+  register: (name: string, nim: string, character: string) => void;
   logout: () => void;
   adminAddBottles: (userId: string, bottles: number) => void;
   acceptTicket: (ticketId: string) => void;
@@ -64,7 +64,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     { id: 'u3', name: 'Siti', nim: '120220003', role: 'student', points: 800, character: 'girl.png', history: [] },
     { id: 'u4', name: 'Joko', nim: '120220004', role: 'student', points: 1500, character: 'plague.png', history: [] },
   ]);
-  const [machine, setMachine] = useState({ capacity: 45, status: 'Online' as const });
+  const [machine, setMachine] = useState<{ capacity: number; status: 'Online' | 'Full' | 'Maintenance' }>({ capacity: 45, status: 'Online' });
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [stats, setStats] = useState({ totalBottles: 15420, totalCO2: 616.8, totalFilament: 3084 });
   const [rewards, setRewards] = useState<RewardItem[]>([

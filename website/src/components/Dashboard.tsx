@@ -1,6 +1,6 @@
 import { useAppStore } from '../store';
 import { useState } from 'react';
-import { LogOut, Recycle, Star, Trophy, Droplets, Leaf, Activity, Box, AlertCircle, ShoppingBag, Clock, BookOpen, ChevronUp, Award, Gift, Crown, Users, Medal, Flame, Swords } from 'lucide-react';
+import { LogOut, Star, Trophy, Droplets, Leaf, Activity, Box, AlertCircle, ShoppingBag, Clock, BookOpen, Award, Gift, Crown, Medal, Flame, Swords } from 'lucide-react';
 
 export default function Dashboard() {
   const { currentUser, users, machine, stats, rewards, logout, redeemReward } = useAppStore();

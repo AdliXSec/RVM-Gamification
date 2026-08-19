@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppStore } from '../store';
-import { LogOut, Trash2, Settings, AlertTriangle, CheckCircle, Users, Gift, XCircle, Tag, Activity, Wrench } from 'lucide-react';
+import { LogOut, Trash2, Settings, AlertTriangle, CheckCircle, Users, Gift, Tag, Activity, Wrench } from 'lucide-react';
 
 export default function AdminPanel() {
   const { machine, tickets, users, rewards, logout, adminAddBottles, acceptTicket, completeTicket, updateRewardStatus, addReward, deleteReward } = useAppStore();
