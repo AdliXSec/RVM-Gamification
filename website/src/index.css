@@ -225,3 +225,19 @@
 .patrol-left {
   animation: patrol-l-native 5s linear infinite;
 }
+
+/* Custom Scrollbar for Gamified Look */
+::-webkit-scrollbar {
+  width: 14px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(220 15% 7%);
+  border-left: 2px solid hsl(220 12% 16%);
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(142 40% 30%);
+  border: 2px solid hsl(220 15% 7%);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(142 50% 40%);
+}

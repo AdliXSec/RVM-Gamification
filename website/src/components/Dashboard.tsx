@@ -81,11 +81,11 @@ export default function Dashboard() {
                     <Trophy className="w-4 h-4" /> LEVEL {level}
                   </span>
                 </div>
-                <h1 className="font-pixel text-green-400 text-2xl md:text-3xl mb-1 drop-shadow-md flex items-end justify-center md:justify-start gap-3">
-                  {currentUser.name} 
-                  <span className="font-pixel-body text-slate-500 text-base md:text-xl pb-1">#{currentUser.nim}</span>
+                <h1 className="font-pixel text-green-400 text-2xl md:text-3xl mb-1 drop-shadow-md">
+                  {currentUser.name}
                 </h1>
-                <p className="font-pixel-body text-slate-400 text-lg md:text-xl mb-6">Eco Warrior / Smart Campus Recycler</p>
+                <p className="font-pixel-body text-slate-300 text-xl md:text-2xl mb-1 tracking-wider">#{currentUser.nim}</p>
+                <p className="font-pixel-body text-slate-500 text-lg md:text-xl mb-6">Eco Warrior / Smart Campus Recycler</p>
 
                 {/* XP Bar */}
                 <div className="space-y-2 bg-[hsl(220,14%,8%)] p-4 pixel-border">
