@@ -1,0 +1,110 @@
+DAFTAR ARTIKEL JURNAL SINTA 1-2 RELEVAN UNTUK PROJECT RVM
+===========================================================
+Disusun: 24 Agustus 2026 | Penanggung Jawab: Naufal
+
+=======================================
+A. FACILITY LOCATION (Penentuan Lokasi RVM)
+=======================================
+
+1. Penentuan Lokasi Distribution Center dengan Metode P-Median di PT Pertamina EP
+   Penulis : Fadhil, R. A., Prabowo, E. G., & Redi, A. A. N. P.
+   Jurnal  : JMIL (SINTA 2) | 2020 | Vol. 4, No. 1, hal. 1-9
+   DOI     : https://doi.org/10.30988/jmil.v4i1.282
+
+2. Metode Gravity Location untuk Optimasi Penentuan Lokasi Gudang pada Jaringan Distribusi di PT XYZ
+   Penulis : Zhafarina, A., Kurniawan, A. C., Redi, A. A. N. P., & Ruswandi, N.
+   Jurnal  : JMIL (SINTA 2) | 2021 | Vol. 5, No. 1, hal. 31-41
+   DOI     : https://doi.org/10.30988/jmil.v5i1.547
+
+3. Evaluation of Last-Mile Delivery Depot Locations for Third-Party Logistics Companies Using the K-Means Algorithm
+   Penulis : Danjiah, M., Sofitra, M., & Batubara, H.
+   Jurnal  : JMIL (SINTA 2) | 2025 | Vol. 9, No. 1, hal. 18-34
+   DOI     : https://doi.org/10.30988/jmil.v9i1.1574
+
+=======================================
+B. VEHICLE ROUTING (Rute Pengumpulan Botol)
+=======================================
+
+4. Particle Swarm Optimization Algorithm to Solve Vehicle Routing Problem with Fuel Consumption Minimization
+   Penulis : Ramadhani, B. N. I. F. & Garside, A. K.
+   Jurnal  : JOSI (SINTA 2) | 2021 | Vol. 20, No. 1, hal. 1-10
+   DOI     : https://doi.org/10.25077/josi.v20.n1.p1-10.2021
+
+5. Sequential Routing-Loading Algorithm for Optimizing One-Door Container Closed-Loop Logistics Operations
+   Penulis : Ariningsih, P. K., Iswari, T., Poetra, K. D., & Aritonang, Y. M. K.
+   Jurnal  : JOSI (SINTA 2) | 2020 | Vol. 19, No. 2, hal. 122-132
+   DOI     : https://doi.org/10.25077/josi.v19.n2.p122-132.2020
+
+6. Penentuan Rute Kendaraan pada Sistem Distribusi Logistik Pasca Bencana (Studi Kasus)
+   Penulis : Andriansyah & Sentia, P. D.
+   Jurnal  : JMIL (SINTA 2) | 2018 | Vol. 2, No. 1, hal. 79-89
+   DOI     : https://doi.org/10.30988/jmil.v2i1.28
+
+7. Penentuan Rute Kendaraan Heterogen Menggunakan Algoritma Insertion Heuristic
+   Penulis : Saputra, N., Sentia, P. D., & Andriansyah
+   Jurnal  : JOSI (SINTA 2) | 2018 | Vol. 17, No. 1, hal. 35-45
+   DOI     : https://doi.org/10.25077/josi.v17.n1.p35-45.2018
+
+=======================================
+C. SCHEDULING (Penjadwalan Pengumpulan)
+=======================================
+
+8. Penjadwalan dan Penentuan Rute Distribusi Komoditas ke Wilayah Timur Indonesia
+   Penulis : Fatma, E. & Kartika, W.
+   Jurnal  : JOSI (SINTA 2) | 2017 | Vol. 16, No. 1, hal. 40-49
+   DOI     : https://doi.org/10.25077/josi.v16.n1.p40-49.2017
+
+9. Goal Programming and Monte Carlo Simulation for Optimizing Inbound Scheduling in Resource-Constrained Warehouses
+   Penulis : Enoson, S., Handojo, A., Octavia, T., & Edryan, D. F.
+   Jurnal  : JOSI (SINTA 2) | 2025 | Vol. 24, No. 2, hal. 324-344
+   DOI     : https://doi.org/10.25077/josi.v24.n2.p324-344.2025
+
+=======================================
+D. CIRCULAR ECONOMY & GREEN SUPPLY CHAIN
+=======================================
+
+10. Integrating Material Circularity and Green Logistics Indicators in Supply Chain Performance Measurement Using the Green SCOR Model
+    Penulis : Dewi, A. C., Kristianes, W., Waluyo, M. R., & Nurfajriah
+    Jurnal  : JMIL (SINTA 2) | 2026 | Vol. 10, No. 1, hal. 115-133
+    DOI     : https://doi.org/10.30988/jmil.v10i1.1723
+
+11. Consumer Insights for Optimization of Industrial Systems: Greenwashing Perception in Adopting Single-Use Plastics Products in Padang City
+    Penulis : Rahman, H., Hesti, N. M. P., Games, D., & Shetye, N.
+    Jurnal  : JOSI (SINTA 2) | 2025 | Vol. 24, No. 2, hal. 198-212
+    DOI     : https://doi.org/10.25077/josi.v24.n2.p198-212.2025
+
+=======================================
+E. REVERSE LOGISTICS & SUPPLY CHAIN RECYCLING
+=======================================
+
+12. Reverse Logistics Network Design for Plastic Waste Management in Jakarta: Robust Optimization Method
+    Penulis : Ardi, R., Nurkamila, S., Citraningrum, D. L., & Zahari, T. N.
+    Jurnal  : IJTech (SINTA 1 / Scopus Q1) | 2023 | Vol. 14, No. 7, hal. 1332-1344
+    DOI     : https://doi.org/10.14716/ijtech.v14i7.6681
+
+13. Managing Nature 5.0: The Role of Digital Technologies in the Circular Economy
+    Penulis : Berawi, M. A.
+    Jurnal  : IJTech (SINTA 1 / Scopus Q1) | 2020 | Vol. 11, No. 4, hal. 652-655
+    DOI     : https://doi.org/10.14716/ijtech.v11i4.4363
+
+14. Optimizing the Supply Chain for Recycling Electric Vehicle NMC Batteries
+    Penulis : Kasy, F. I., Hisjam, M., Jauhari, W. A., & Hassan, S. A. H. S.
+    Jurnal  : JOSI (SINTA 2) | 2024 | Vol. 23, No. 2, hal. 207-226
+    DOI     : https://doi.org/10.25077/josi.v23.n2.p207-226.2024
+
+=======================================
+F. LAST-MILE & ADOPSI PENGGUNA
+=======================================
+
+15. Determinants of Parcel Locker Adoption in Last-Mile Delivery with Emphasis on Logistics Value, Consumer Orientation, Value Co-Creation, and Green Awareness
+    Penulis : Lesmini, L., Ricardianto, P., Nofrisel, Tatiana, Y., & Abdurachman, E.
+    Jurnal  : JMIL (SINTA 2) | 2026 | Vol. 10, No. 1, hal. 21-39
+    DOI     : https://doi.org/10.30988/jmil.v10i1.1759
+
+=======================================
+RINGKASAN
+=======================================
+Total Artikel : 15
+- IJTech (SINTA 1) : 2 artikel (#12, #13)
+- JOSI   (SINTA 2) : 8 artikel (#4, #5, #7, #8, #9, #11, #14)
+- JMIL   (SINTA 2) : 5 artikel (#1, #2, #3, #6, #10, #15)
