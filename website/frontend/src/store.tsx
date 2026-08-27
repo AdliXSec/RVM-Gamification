@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import api from './lib/api';
 
 export type Transaction = { 
   id: string; 
@@ -14,13 +15,14 @@ export type User = {
   id: string; 
   name: string;
   nim: string;
-  role: 'student' | 'admin'; 
+  role: 'student' | 'admin' | 'officer'; 
   points: number; 
   character: string;
   history: Transaction[] 
 };
 
 export type Ticket = { 
+  machineName: string;
   id: string; 
   capacityAtIssue: number; 
   status: 'Pending' | 'Accepted' | 'Completed'; 
@@ -38,209 +40,296 @@ export type RewardItem = {
 interface AppState {
   currentUser: User | null;
   users: User[];
-  machine: { maxCapacity: number; currentBottles: number; status: 'Online' | 'Full' | 'Maintenance' };
+  machine: { id: string; maxCapacity: number; currentBottles: number; status: 'Online' | 'Full' | 'Maintenance', name?: string, location?: string };
+  machines: any[];
+  setActiveMachine: (id: string) => void;
   tickets: Ticket[];
   stats: { totalBottles: number; totalCO2: number; totalFilament: number };
   rewards: RewardItem[];
-  login: (name: string, role: 'student' | 'admin') => void;
-  register: (name: string, nim: string, character: string) => void;
+  redemptions: any[]; // for admin to see pending redemptions
+  allLogs: any[];
+  settings: Record<string, string>;
+  updateSetting: (key: string, value: string) => Promise<void>;
+  students: { id: string; name: string; nim: string }[];
+  
+  // Actions
+  login: (email: string, pass: string) => Promise<boolean>;
+  register: (name: string, nim: string, email: string, pass: string, character: string) => Promise<boolean>;
   logout: () => void;
-  adminAddBottles: (userId: string, bottles: number) => void;
-  setMachineMaxCapacity: (max: number) => void;
-  acceptTicket: (ticketId: string) => void;
-  completeTicket: (ticketId: string) => void;
-  redeemReward: (cost: number, itemName: string) => void;
-  updateRewardStatus: (userId: string, txId: string, status: 'completed' | 'cancelled') => void;
-  addReward: (name: string, cost: number, desc: string) => void;
-  deleteReward: (id: string) => void;
+  adminAddBottles: (userId: string, machineId: string, bottles: number) => Promise<void>;
+  setMachineMaxCapacity: (max: number) => Promise<void>;
+  addMachine: (name: string, location: string, maxCapacity: number) => Promise<void>;
+  deleteMachine: (id: string) => Promise<void>;
+  acceptTicket: (ticketId: string) => Promise<void>;
+  completeTicket: (ticketId: string) => Promise<void>;
+  redeemReward: (cost: number, rewardId: string) => Promise<void>;
+  updateRewardStatus: (redemptionId: string, status: 'completed' | 'cancelled') => Promise<void>;
+  addReward: (name: string, cost: number, desc: string) => Promise<void>;
+  deleteReward: (id: string) => Promise<void>;
+  refreshData: () => Promise<void>;
 }
 
 const AppContext = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([
-    { id: 'u1', name: 'Naufal', nim: '120220001', role: 'student', points: 1250, character: 'ninja.png', history: [] },
-    { id: 'u2', name: 'Budi', nim: '120220002', role: 'student', points: 300, character: 'knight.png', history: [] },
-    { id: 'u3', name: 'Siti', nim: '120220003', role: 'student', points: 800, character: 'girl.png', history: [] },
-    { id: 'u4', name: 'Joko', nim: '120220004', role: 'student', points: 1500, character: 'plague.png', history: [] },
-  ]);
-  const [machine, setMachine] = useState<{ maxCapacity: number; currentBottles: number; status: 'Online' | 'Full' | 'Maintenance' }>({ maxCapacity: 250, currentBottles: 45, status: 'Online' });
+  const [users, setUsers] = useState<User[]>([]); // leaderboard
+  const [students, setStudents] = useState<AppState['students']>([]);
+  const [machine, setMachine] = useState<AppState['machine']>({ id: '1', maxCapacity: 250, currentBottles: 0, status: 'Online' });
+  const [machines, setMachines] = useState<any[]>([]);
+  const setActiveMachine = (id: string) => {
+    const m = machines.find((m: any) => m.id == id);
+    if (m) setMachine({ id: m.id.toString(), maxCapacity: m.max_capacity, currentBottles: m.current_bottles, status: m.status === 'online' ? 'Online' : (m.status === 'full' ? 'Full' : 'Maintenance'), name: m.name, location: m.location });
+  };
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [stats, setStats] = useState({ totalBottles: 15420, totalCO2: 616.8, totalFilament: 3084 });
-  const [rewards, setRewards] = useState<RewardItem[]>([
-    { id: 'r1', name: 'Voucher Kantin Rp10.000', cost: 1000, desc: 'Berlaku selama semester ganjil 2026.', color: 'bg-orange-100 text-orange-600' },
-    { id: 'r2', name: 'Potongan Biaya UKT 50k', cost: 5000, desc: 'Berlaku selama semester ganjil 2026.', color: 'bg-blue-100 text-blue-600' },
-    { id: 'r3', name: 'Merchandise Tumbler', cost: 2500, desc: 'Berlaku selama semester ganjil 2026.', color: 'bg-purple-100 text-purple-600' },
-  ]);
+  const [stats, setStats] = useState({ totalBottles: 0, totalCO2: 0, totalFilament: 0 });
+  const [rewards, setRewards] = useState<RewardItem[]>([]);
+  const [redemptions, setRedemptions] = useState<any[]>([]);
+  const [allLogs, setAllLogs] = useState<any[]>([]);
+  const [settings, setSettings] = useState<Record<string, string>>({ 'xp_per_bottle': '100' });
 
-  const login = (name: string, role: 'student' | 'admin') => {
-    if (role === 'admin') {
-      setCurrentUser({ id: 'admin', name: 'Admin Logistik', nim: '-', role: 'admin', points: 0, character: '', history: [] });
-      toast.success("Login Admin berhasil.");
-    } else {
-      const user = users.find(u => u.name.toLowerCase() === name.toLowerCase() || u.nim === name);
-      if (!user) {
-        toast.error("Akun tidak ditemukan. Silakan daftar terlebih dahulu.");
-        return;
+  const colors = ['bg-green-100 text-green-600', 'bg-rose-100 text-rose-600', 'bg-amber-100 text-amber-600', 'bg-cyan-100 text-cyan-600', 'bg-indigo-100 text-indigo-600'];
+
+  const refreshData = async () => {
+    try {
+      const ldRes = await api.get('/users/leaderboard');
+      setUsers(ldRes.data.leaderboard.map((u: any) => ({ ...u, history: [] })));
+    } catch(e) { console.error('Leaderboard err:', e); }
+
+    try {
+      const statRes = await api.get('/users/campus-stats');
+      const st = statRes.data.stats;
+      setStats({ totalBottles: st.total_bottles, totalCO2: st.total_co2_saved, totalFilament: st.total_filament });
+    } catch(e) { console.error('Stats err:', e); }
+
+    try {
+      const mRes = await api.get('/machines');
+      if (mRes.data.machines.length > 0) {
+        setMachines(mRes.data.machines);
+        setMachine(prev => {
+          const match = mRes.data.machines.find((x: any) => x.id == prev.id) || mRes.data.machines[0];
+          if(!match) return prev;
+          return { id: match.id.toString(), maxCapacity: match.max_capacity, currentBottles: match.current_bottles, status: match.status === 'online' ? 'Online' : (match.status === 'full' ? 'Full' : 'Maintenance'), name: match.name, location: match.location };
+        });
       }
-      setCurrentUser(user);
-      toast.success(`Selamat datang kembali, ${user.name}!`);
-    }
-  };
+    } catch(e) { console.error('Machines err:', e); }
 
-  const register = (name: string, nim: string, character: string) => {
-    if (users.find(u => u.nim === nim || u.name.toLowerCase() === name.toLowerCase())) {
-      toast.error("Nama/NIM ini sudah terdaftar!");
-      return;
-    }
-    const newUser: User = { id: Date.now().toString(), name, nim, role: 'student', points: 0, character, history: [] };
-    setUsers([...users, newUser]);
-    setCurrentUser(newUser);
-    toast.success("Registrasi berhasil! Selamat datang.");
-  };
+    try {
+      const rRes = await api.get('/rewards');
+      setRewards(rRes.data.rewards.map((r: any, i: number) => ({
+        id: r.id, name: r.name, cost: r.cost, desc: r.description || '', color: colors[i % colors.length]
+      })));
+    } catch(e) { console.error('Rewards err:', e); }
 
-  const logout = () => setCurrentUser(null);
+    try {
+      const token = localStorage.getItem('token');
+      if (token && currentUser) {
+         if (currentUser.role === 'admin' || currentUser.role === 'officer') {
+            const tRes = await api.get('/tickets');
+            setTickets(tRes.data.tickets.map((t: any) => ({
+              id: t.id, machineName: t.machine?.name || 'RVM', capacityAtIssue: t.capacity_at_issue, status: t.status === 'pending' ? 'Pending' : (t.status === 'accepted' ? 'Accepted' : 'Completed'), date: t.created_at
+            })));
 
-  const setMachineMaxCapacity = (max: number) => {
-    let status = machine.status;
-    if (machine.currentBottles >= max) status = 'Full';
-    else if (machine.currentBottles < max && machine.status === 'Full') status = 'Online';
-    setMachine({ ...machine, maxCapacity: max, status });
-    toast.success(`Max kapasitas alat diubah menjadi ${max} botol.`);
-  };
+            if (currentUser.role === 'admin') {
+              const pendRes = await api.get('/rewards/redemptions/pending');
+              setRedemptions(pendRes.data.redemptions);
+              const studRes = await api.get('/users/students');
+              setStudents(studRes.data.students);
 
-  const adminAddBottles = (userId: string, bottles: number) => {
-    const newBottles = Math.min(machine.currentBottles + bottles, machine.maxCapacity);
-    const addedBottles = newBottles - machine.currentBottles;
-    if (addedBottles <= 0) {
-      toast.error("Mesin sudah penuh! Selesaikan pick-up ticket dulu.");
-      return;
-    }
-
-    const earnedPoints = addedBottles * 100;
-    setStats(prev => ({
-      totalBottles: prev.totalBottles + addedBottles,
-      totalCO2: prev.totalCO2 + (addedBottles * 0.04),
-      totalFilament: prev.totalFilament + (addedBottles * 0.2)
-    }));
-
-    setMachine({
-      ...machine,
-      currentBottles: newBottles,
-      status: newBottles >= machine.maxCapacity ? 'Full' : 'Online'
-    });
-
-    setUsers(prev => prev.map(u => {
-      if (u.id === userId) {
-        const tx: Transaction = {
-          id: Date.now().toString(),
-          type: 'earn',
-          desc: `Setor ${addedBottles} Botol`,
-          amount: earnedPoints,
-          date: new Date().toLocaleString(),
-          status: 'completed'
-        };
-        if (currentUser?.id === u.id) {
-          setCurrentUser({ ...u, points: u.points + earnedPoints, history: [tx, ...u.history] });
-        }
-        return { ...u, points: u.points + earnedPoints, history: [tx, ...u.history] };
+              const logsRes = await api.get('/users/history/all');
+              setAllLogs(logsRes.data.data.map((tx: any) => ({ id: tx.id, date: tx.created_at, type: tx.type, amount: tx.amount, desc: tx.description, status: tx.status, user: tx.user })));
+            }
+         }
+         
+         const hRes = await api.get('/users/history');
+         const history = hRes.data.data.map((tx: any) => ({
+             id: tx.id, date: tx.created_at, type: tx.type, amount: tx.amount, desc: tx.description, status: tx.status
+         }));
+         
+         const me = await api.get('/auth/me');
+         setCurrentUser({ ...me.data.user, history });
       }
-      return u;
-    }));
-
-    toast.success(`Berhasil menambahkan ${addedBottles} botol untuk user.`);
-
-    const percentage = Math.round((newBottles / machine.maxCapacity) * 100);
-    if (percentage >= 80) {
-      if (!tickets.find(t => t.status !== 'Completed')) {
-        const newTicket: Ticket = {
-          id: `TCK-${Math.floor(Math.random() * 1000)}`,
-          capacityAtIssue: percentage,
-          status: 'Pending',
-          date: new Date().toLocaleString()
-        };
-        setTickets([newTicket, ...tickets]);
-        toast.warning("ALARM SOP: Mesin mencapai >= 80%. Pick-up Ticket otomatis dibuat!");
-      }
+    } catch (err) {
+      console.error("Auth data err:", err);
     }
   };
 
-  const acceptTicket = (ticketId: string) => {
-    setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: 'Accepted' } : t));
-    setMachine(prev => ({ ...prev, status: 'Maintenance' }));
-    toast.info("Tugas dikunci. Silakan menuju lokasi untuk evakuasi botol.");
-  };
-
-  const completeTicket = (ticketId: string) => {
-    setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: 'Completed' } : t));
-    setMachine(prev => ({ ...prev, currentBottles: 0, status: 'Online' }));
-    toast.success("Evakuasi Selesai. Mesin kosong (0 botol) dan Online.");
-  };
-
-  const redeemReward = (cost: number, itemName: string) => {
-    if (!currentUser || currentUser.points < cost) {
-      toast.error("Poin tidak cukup!");
-      return;
-    }
-    const tx: Transaction = {
-      id: Date.now().toString(),
-      type: 'redeem',
-      desc: `Tukar Reward: ${itemName}`,
-      amount: cost,
-      date: new Date().toLocaleString(),
-      status: 'pending'
-    };
-    const updatedUser = { 
-      ...currentUser, 
-      points: currentUser.points - cost, 
-      history: [tx, ...currentUser.history] 
-    };
-    setCurrentUser(updatedUser);
-    setUsers(prev => prev.map(u => u.id === currentUser.id ? updatedUser : u));
-    toast.info(`Permintaan penukaran ${itemName} telah dikirim ke Admin.`);
-  };
-
-  const updateRewardStatus = (userId: string, txId: string, status: 'completed' | 'cancelled') => {
-    setUsers(prev => prev.map(u => {
-      if (u.id === userId) {
-        const txIndex = u.history.findIndex(t => t.id === txId);
-        if (txIndex > -1) {
-          const newHistory = [...u.history];
-          const tx = { ...newHistory[txIndex], status };
-          newHistory[txIndex] = tx;
-          
-          let newPoints = u.points;
-          if (status === 'cancelled') {
-            newPoints += tx.amount;
-          }
-
-          const updatedUser = { ...u, points: newPoints, history: newHistory };
-          if (currentUser?.id === u.id) {
-            setCurrentUser(updatedUser);
-          }
-          return updatedUser;
+  useEffect(() => {
+    // Initial Auth Check
+    const init = async () => {
+      const setRes = await api.get('/settings').catch(()=>null);
+      if(setRes?.data?.settings) setSettings(setRes.data.settings);
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const res = await api.get('/auth/me');
+          setCurrentUser({ ...res.data.user, history: [] });
+        } catch {
+          localStorage.removeItem('token');
         }
       }
-      return u;
-    }));
-    toast.success(`Status reward diperbarui menjadi ${status.toUpperCase()}.`);
+      refreshData();
+    };
+    init();
+    
+    // Poll data every 10s
+    const interval = setInterval(refreshData, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Make sure refreshData runs when currentUser changes (e.g. after login)
+  useEffect(() => {
+    if (currentUser) {
+      refreshData();
+    }
+  }, [currentUser?.id]);
+
+
+  const login = async (email: string, pass: string) => {
+    try {
+      const res = await api.post('/auth/login', { email, password: pass });
+      localStorage.setItem('token', res.data.token.access_token);
+      setCurrentUser({ ...res.data.user, history: [] });
+      toast.success("Login berhasil.");
+      return true;
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Login gagal");
+      return false;
+    }
   };
 
-  const addReward = (name: string, cost: number, desc: string) => {
-    const colors = ['bg-green-100 text-green-600', 'bg-rose-100 text-rose-600', 'bg-amber-100 text-amber-600', 'bg-cyan-100 text-cyan-600', 'bg-indigo-100 text-indigo-600'];
-    const color = colors[rewards.length % colors.length];
-    setRewards([...rewards, { id: Date.now().toString(), name, cost, desc, color }]);
-    toast.success(`Reward "${name}" berhasil ditambahkan!`);
+  const register = async (name: string, nim: string, email: string, pass: string, character: string) => {
+    try {
+      const res = await api.post('/auth/register', { name, nim, email, password: pass, password_confirmation: pass, character });
+      localStorage.setItem('token', res.data.token.access_token);
+      setCurrentUser({ ...res.data.user, history: [] });
+      toast.success("Registrasi berhasil!");
+      return true;
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Registrasi gagal");
+      return false;
+    }
   };
 
-  const deleteReward = (id: string) => {
-    setRewards(rewards.filter(r => r.id !== id));
-    toast.success("Reward dihapus dari katalog.");
+  const logout = async () => {
+    try {
+       await api.post('/auth/logout');
+    } catch {}
+    localStorage.removeItem('token');
+    setCurrentUser(null);
+  };
+
+  
+  const updateSetting = async (key: string, value: string) => {
+    try {
+      await api.post('/settings', { key, value });
+      toast.success('Pengaturan disimpan');
+      refreshData();
+    } catch(e) { console.error(e); }
+  };
+
+  const setMachineMaxCapacity = async (max: number) => {
+    try {
+      await api.patch(`/machines/${machine.id}/capacity`, { max_capacity: max });
+      toast.success(`Max kapasitas alat diubah.`);
+      refreshData();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Gagal mengubah kapasitas.");
+    }
+  };
+
+  const adminAddBottles = async (userId: string, machineId: string, bottles: number) => {
+    try {
+      await api.post(`/machines/${machineId}/deposit`, { user_id: userId, bottles });
+      toast.success(`Berhasil menambahkan ${bottles} botol.`);
+      refreshData();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Gagal menambah botol.");
+    }
+  };
+
+  const acceptTicket = async (ticketId: string) => {
+    try {
+      await api.patch(`/tickets/${ticketId}/accept`);
+      toast.info("Tugas dikunci. Silakan menuju lokasi.");
+      refreshData();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Gagal menerima tiket");
+    }
+  };
+
+  const completeTicket = async (ticketId: string) => {
+    try {
+      await api.patch(`/tickets/${ticketId}/complete`);
+      toast.success("Evakuasi Selesai.");
+      refreshData();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Gagal menyelesaikan");
+    }
+  };
+
+  const redeemReward = async (_cost: number, rewardId: string) => {
+    try {
+      await api.post(`/rewards/${rewardId}/redeem`);
+      toast.info(`Permintaan penukaran berhasil dikirim.`);
+      refreshData();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Gagal menukar reward.");
+    }
+  };
+
+  const updateRewardStatus = async (redemptionId: string, status: 'completed' | 'cancelled') => {
+    try {
+      await api.patch(`/rewards/redemptions/${redemptionId}`, { status });
+      toast.success(`Status reward diperbarui.`);
+      refreshData();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Gagal memperbarui status.");
+    }
+  };
+
+  const addReward = async (name: string, cost: number, desc: string) => {
+    try {
+      await api.post('/rewards', { name, cost, description: desc, is_active: true });
+      toast.success(`Reward "${name}" berhasil ditambahkan!`);
+      refreshData();
+    } catch (err: any) {
+      toast.error("Gagal menambah reward");
+    }
+  };
+
+
+  const addMachine = async (name: string, location: string, maxCapacity: number) => {
+    try {
+      await api.post('/machines', { name, location, max_capacity: maxCapacity });
+      refreshData();
+    } catch(e) { console.error(e); }
+  };
+
+  const deleteMachine = async (id: string) => {
+    try {
+      if (!window.confirm('Yakin ingin menghapus mesin ini? Semua data terkait (termasuk tiket) bisa terhapus.')) return;
+      await api.delete(`/machines/${id}`);
+      refreshData();
+    } catch(e) { console.error(e); }
+  };
+
+  const deleteReward = async (id: string) => {
+    try {
+      await api.delete(`/rewards/${id}`);
+      toast.success("Reward dihapus.");
+      refreshData();
+    } catch (err: any) {
+      toast.error("Gagal menghapus reward");
+    }
   };
 
   return (
-    <AppContext.Provider value={{ currentUser, users, machine, tickets, stats, rewards, login, register, logout, adminAddBottles, setMachineMaxCapacity, acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward }}>
+    <AppContext.Provider value={{ 
+      currentUser, users, students, machine, tickets, stats, rewards, redemptions, allLogs, machines,
+      login, register, logout, adminAddBottles, setMachineMaxCapacity, 
+      acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward, refreshData, setActiveMachine, addMachine, deleteMachine, settings, updateSetting 
+    }}>
       {children}
     </AppContext.Provider>
   );

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAppStore } from '../store';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
 const CHARACTERS = [
@@ -9,24 +9,31 @@ const CHARACTERS = [
 
 export default function Auth({ mode }: { mode: 'login' | 'register' }) {
   const { login, register } = useAppStore();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<'student' | 'admin'>(mode === 'login' ? 'student' : 'student');
   const [name, setName] = useState('');
   const [nim, setNim] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [selectedChar, setSelectedChar] = useState(CHARACTERS[0]);
 
-  const handleStudentLogin = (e: React.FormEvent) => {
+  const handleStudentLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) return;
-    login(name, 'student');
+    if (!email || !password) return;
+    const success = await login(email, password);
+    if (success) navigate('/');
   };
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !nim) return;
-    register(name, nim, selectedChar);
+    if (!name || !nim || !email || !password) return;
+    const success = await register(name, nim, email, password, selectedChar);
+    if (success) navigate('/');
   };
-  const handleAdmin = (e: React.FormEvent) => {
+  const handleAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    login('admin', 'admin');
+    if (!email || !password) return;
+    const success = await login(email, password);
+    if (success) navigate('/');
   };
 
   return (
@@ -68,12 +75,12 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
               {tab === 'student' ? (
                 <form onSubmit={handleStudentLogin} className="space-y-5">
                   <div className="space-y-2">
-                    <label className="font-pixel text-[8px] text-slate-500">NAMA / NIM</label>
-                    <input className="pixel-input w-full px-3 py-2" placeholder="Misal: Naufal" value={name} onChange={e => setName(e.target.value)} required />
+                    <label className="font-pixel text-[8px] text-slate-500">EMAIL</label>
+                    <input className="pixel-input w-full px-3 py-2" type="email" placeholder="naufal@student.test" value={email} onChange={e => setEmail(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
                     <label className="font-pixel text-[8px] text-slate-500">PASSWORD</label>
-                    <input className="pixel-input w-full px-3 py-2" type="password" placeholder="***" defaultValue="pass" />
+                    <input className="pixel-input w-full px-3 py-2" type="password" placeholder="***" value={password} onChange={e => setPassword(e.target.value)} required />
                   </div>
                   <button type="submit" className="pixel-btn bg-green-700 hover:bg-green-600 text-green-100 w-full py-3">MASUK</button>
                   <p className="text-center font-pixel-body text-slate-400 text-base">
@@ -83,8 +90,12 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
               ) : (
                 <form onSubmit={handleAdmin} className="space-y-5">
                   <div className="space-y-2">
-                    <label className="font-pixel text-[8px] text-slate-500">ID PETUGAS</label>
-                    <input className="pixel-input w-full px-3 py-2" defaultValue="admin" disabled />
+                    <label className="font-pixel text-[8px] text-slate-500">EMAIL ADMIN</label>
+                    <input className="pixel-input w-full px-3 py-2" type="email" placeholder="admin@rvm.test" value={email} onChange={e => setEmail(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-pixel text-[8px] text-slate-500">PASSWORD</label>
+                    <input className="pixel-input w-full px-3 py-2" type="password" placeholder="***" value={password} onChange={e => setPassword(e.target.value)} required />
                   </div>
                   <button type="submit" className="pixel-btn bg-slate-700 hover:bg-slate-600 text-slate-200 w-full py-3"
                     style={{boxShadow: '4px 4px 0 0 rgba(0,0,0,0.4), 4px 0 0 0 hsl(220,10%,25%), -4px 0 0 0 hsl(220,10%,25%), 0 4px 0 0 hsl(220,10%,25%), 0 -4px 0 0 hsl(220,10%,25%)'}}>
@@ -107,17 +118,11 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
               </div>
               <div className="space-y-2">
                 <label className="font-pixel text-[8px] text-slate-500">EMAIL</label>
-                <input className="pixel-input w-full px-3 py-2" type="email" placeholder="Email Kampus" required />
+                <input className="pixel-input w-full px-3 py-2" type="email" placeholder="Email Kampus" value={email} onChange={e => setEmail(e.target.value)} required />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
+              <div className="space-y-2">
                   <label className="font-pixel text-[8px] text-slate-500">PASSWORD</label>
-                  <input className="pixel-input w-full px-3 py-2" type="password" placeholder="***" required />
-                </div>
-                <div className="space-y-2">
-                  <label className="font-pixel text-[8px] text-slate-500">REPEAT PASS</label>
-                  <input className="pixel-input w-full px-3 py-2" type="password" placeholder="***" required />
-                </div>
+                  <input className="pixel-input w-full px-3 py-2" type="password" placeholder="***" value={password} onChange={e => setPassword(e.target.value)} required />
               </div>
               
               <div className="space-y-2 pt-2 border-t-2 border-[hsl(220,12%,16%)]">

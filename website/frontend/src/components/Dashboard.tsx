@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { LogOut, Star, Trophy, Droplets, Leaf, Activity, Box, AlertCircle, ShoppingBag, Clock, BookOpen, Award, Gift, Crown, Medal, Flame, Swords } from 'lucide-react';
 
 export default function Dashboard() {
-  const { currentUser, users, machine, stats, rewards, logout, redeemReward } = useAppStore();
+  const { currentUser, users, stats, machines, rewards, logout, redeemReward, settings } = useAppStore();
   const [tab, setTab] = useState<'home' | 'redeem' | 'history' | 'guide' | 'leaderboard'>('home');
 
   if (!currentUser) return null;
@@ -113,8 +113,8 @@ export default function Dashboard() {
               {[
                 { icon: <Star className="w-5 h-5 text-yellow-500" />, val: currentUser.points.toString(), label: 'TOTAL XP' },
                 { icon: <Trophy className="w-5 h-5 text-yellow-500" />, val: `LVL ${level}`, label: 'LEVEL' },
-                { icon: <Droplets className="w-5 h-5 text-blue-400" />, val: (currentUser.points / 100).toFixed(0), label: 'BOTOL' },
-                { icon: <Leaf className="w-5 h-5 text-green-500" />, val: `${((currentUser.points / 100) * 0.04).toFixed(1)}`, label: 'KG CO2' },
+                { icon: <Droplets className="w-5 h-5 text-blue-400" />, val: (currentUser.points / Number(settings?.xp_per_bottle || 100)).toFixed(0), label: 'BOTOL' },
+                { icon: <Leaf className="w-5 h-5 text-green-500" />, val: `${((currentUser.points / Number(settings?.xp_per_bottle || 100)) * 0.04).toFixed(1)}`, label: 'KG CO2' },
               ].map((s, i) => (
                 <div key={i} className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4 text-center pixel-card">
                   <div className="flex justify-center mb-2">{s.icon}</div>
@@ -124,33 +124,39 @@ export default function Dashboard() {
               ))}
             </div>
 
-            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-5">
+                        <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-5">
               <h3 className="font-pixel text-[9px] text-slate-400 mb-4 flex items-center gap-2"><Activity className="w-4 h-4 text-green-500" /> STATUS MESIN RVM</h3>
-              {machine.status === 'Online' && machine.currentBottles < machine.maxCapacity ? (
-                <div className="pixel-border-green bg-green-950/15 p-4 flex items-center gap-3">
-                  <Box className="w-5 h-5 text-green-500" />
-                  <div>
-                    <span className="font-pixel text-[9px] text-green-400">MESIN TERSEDIA</span>
-                    <p className="font-pixel-body text-slate-500 text-lg">Gedung A, Lantai 1 — {machine.currentBottles}/{machine.maxCapacity} Botol</p>
+              <div className="space-y-4">
+              {machines && machines.map((m: any) => (
+                <div key={m.id} className="mb-4">
+                  {m.status === 'online' && m.current_bottles < m.max_capacity ? (
+                    <div className="pixel-border-green bg-green-950/15 p-4 flex items-center gap-3">
+                      <Box className="w-5 h-5 text-green-500" />
+                      <div>
+                        <span className="font-pixel text-[9px] text-green-400">MESIN TERSEDIA</span>
+                        <p className="font-pixel-body text-slate-500 text-lg">{m.name} ({m.location}) — {m.current_bottles}/{m.max_capacity} Botol</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="pixel-border-red bg-red-950/15 p-4 flex items-center gap-3">
+                      <AlertCircle className="w-5 h-5 text-red-400" />
+                      <div>
+                        <span className="font-pixel text-[9px] text-red-400">SEDANG DIKOSONGKAN</span>
+                        <p className="font-pixel-body text-slate-500 text-lg">{m.name} ({m.location}) - Petugas sedang menuju lokasi.</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="mt-2">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-pixel text-[7px] text-slate-600">KAPASITAS</span>
+                      <span className="font-pixel text-[7px] text-slate-500">{Math.round((m.current_bottles / m.max_capacity) * 100)}%</span>
+                    </div>
+                    <div className="pixel-progress h-3">
+                      <div style={{ width: `${Math.min(100, (m.current_bottles / m.max_capacity) * 100)}%` }} className="h-full transition-all" />
+                    </div>
                   </div>
                 </div>
-              ) : (
-                <div className="pixel-border-red bg-red-950/15 p-4 flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-400" />
-                  <div>
-                    <span className="font-pixel text-[9px] text-red-400">SEDANG DIKOSONGKAN</span>
-                    <p className="font-pixel-body text-slate-500 text-lg">Petugas sedang menuju lokasi. Mohon tunggu.</p>
-                  </div>
-                </div>
-              )}
-              <div className="mt-4">
-                <div className="flex justify-between mb-1">
-                  <span className="font-pixel text-[7px] text-slate-600">KAPASITAS</span>
-                  <span className="font-pixel text-[7px] text-slate-500">{Math.round((machine.currentBottles / machine.maxCapacity) * 100)}%</span>
-                </div>
-                <div className="pixel-progress h-3">
-                  <div style={{ width: `${Math.min(100, (machine.currentBottles / machine.maxCapacity) * 100)}%` }} className="h-full transition-all" />
-                </div>
+              ))}
               </div>
             </div>
 
@@ -201,7 +207,7 @@ export default function Dashboard() {
                       <button
                         className="pixel-btn bg-green-700 hover:bg-green-600 text-green-100 w-full py-3"
                         disabled={currentUser.points < item.cost}
-                        onClick={() => redeemReward(item.cost, item.name)}
+                        onClick={() => redeemReward(item.cost, item.id)}
                         style={currentUser.points < item.cost ? { opacity: 0.3, pointerEvents: 'none' } : {}}
                       >
                         TUKAR

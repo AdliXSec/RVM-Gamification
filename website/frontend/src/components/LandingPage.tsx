@@ -2,7 +2,10 @@ import { ArrowRight, Zap, Trophy, Shield, Cpu, Activity, Star } from 'lucide-rea
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
+import { useAppStore } from '../store';
+
 export default function LandingPage() {
+  const { settings } = useAppStore();
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
@@ -110,7 +113,7 @@ export default function LandingPage() {
 
         <p className="font-pixel-body text-slate-400 text-xl md:text-2xl mb-6 max-w-2xl leading-relaxed z-10">
           Mesin RVM pintar kampus mengubah limbah botolmu menjadi reward eksklusif. 
-          <span className="text-green-400 block mt-2">1 Botol = +100 XP</span>
+          <span className="text-green-400 block mt-2">1 Botol = +{settings?.xp_per_bottle || '100'} XP</span>
         </p>
 
         <Link

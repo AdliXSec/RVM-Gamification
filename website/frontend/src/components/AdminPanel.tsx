@@ -1,13 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '../store';
-import { LogOut, Trash2, Settings, AlertTriangle, CheckCircle, Users, Gift, Tag, Activity, Wrench, Clock } from 'lucide-react';
+import { LogOut, Trash2, Settings, AlertTriangle, CheckCircle, Users, Gift, Tag, Activity, Wrench, Clock, Star } from 'lucide-react';
 
 export default function AdminPanel() {
-  const { machine, tickets, users, rewards, logout, adminAddBottles, acceptTicket, completeTicket, updateRewardStatus, addReward, deleteReward, setMachineMaxCapacity } = useAppStore();
+  const { machine, machines, setActiveMachine, tickets, students, rewards, allLogs, logout, adminAddBottles, acceptTicket, completeTicket, updateRewardStatus, addReward, deleteReward, setMachineMaxCapacity, addMachine, deleteMachine, settings, updateSetting } = useAppStore();
 
   const [tab, setTab] = useState<'ops' | 'users' | 'catalog' | 'logs'>('ops');
   const [selectedUser, setSelectedUser] = useState('');
   const [bottleAmount, setBottleAmount] = useState('10');
+    const [depositMachineId, setDepositMachineId] = useState(machines[0]?.id?.toString() || '1');
+  const [newMachName, setNewMachName] = useState('');
+  const [newMachLoc, setNewMachLoc] = useState('');
+  const [newMachCap, setNewMachCap] = useState('250');
+  const [editXpConfig, setEditXpConfig] = useState('');
+  useEffect(() => { if (settings?.xp_per_bottle) setEditXpConfig(settings.xp_per_bottle); }, [settings]);
   const [newName, setNewName] = useState('');
   const [newCost, setNewCost] = useState('');
   const [newDesc, setNewDesc] = useState('');
@@ -16,7 +22,8 @@ export default function AdminPanel() {
   const handleAddBottles = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser || !bottleAmount) return;
-    adminAddBottles(selectedUser, parseInt(bottleAmount));
+    const finalMachId = machines.find((m:any) => m.id.toString() === depositMachineId) ? depositMachineId : (machines[0]?.id.toString() || '1');
+                    adminAddBottles(selectedUser, finalMachId, parseInt(bottleAmount));
     setBottleAmount('');
   };
   const handleAddReward = (e: React.FormEvent) => {
@@ -33,11 +40,6 @@ export default function AdminPanel() {
     }
   };
 
-  const pendingRewards = users.flatMap(u =>
-    u.history.filter(tx => tx.type === 'redeem' && tx.status === 'pending').map(tx => ({ user: u, tx }))
-  );
-  const studentUsers = users.filter(u => u.role === 'student');
-  const allLogs = users.flatMap(u => u.history.map(tx => ({ user: u, tx }))).sort((a, b) => new Date(b.tx.date).getTime() - new Date(a.tx.date).getTime());
 
   return (
     <div className="flex flex-col min-h-screen bg-[hsl(220,15%,7%)] scanlines overflow-x-hidden relative">
@@ -81,7 +83,12 @@ export default function AdminPanel() {
         {tab === 'ops' && (
           <div className="grid md:grid-cols-2 gap-8">
             <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-cyan-500/30 p-5 space-y-4">
-              <h3 className="font-pixel text-[9px] text-slate-400 flex items-center gap-2"><Activity className="w-4 h-4 text-green-500" /> STATUS MESIN GEDUNG A</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="font-pixel text-[9px] text-slate-400 flex items-center gap-2"><Activity className="w-4 h-4 text-green-500" /> STATUS MESIN</h3>
+                <select className="pixel-input px-2 py-1 text-[8px]" value={machine.id} onChange={e => setActiveMachine(e.target.value)}>
+                  {machines.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
+                </select>
+              </div>
               <div className="flex justify-between items-center">
                 <span className="font-pixel text-[9px] text-slate-500">KAPASITAS ({machine.currentBottles}/{machine.maxCapacity}):</span>
                 <span className={`font-pixel text-lg ${Math.round((machine.currentBottles/machine.maxCapacity)*100) >= 80 ? 'text-red-400' : 'text-slate-200'}`}>
@@ -119,7 +126,7 @@ export default function AdminPanel() {
                 tickets.filter(t => t.status !== 'Completed').map(ticket => (
                   <div key={ticket.id} className="bg-[hsl(30,8%,9%)] border-l-4 border-orange-600 p-4 space-y-3">
                     <div>
-                      <span className="font-pixel text-[9px] text-orange-400 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> {ticket.id}</span>
+                      <span className="font-pixel text-[9px] text-orange-400 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> {ticket.machineName}</span>
                       <p className="font-pixel-body text-slate-500 text-base">Kapasitas: {ticket.capacityAtIssue}% | {ticket.date}</p>
                     </div>
                     {ticket.status === 'Pending' ? (
@@ -148,10 +155,16 @@ export default function AdminPanel() {
               <p className="font-pixel-body text-slate-600 text-base">Simulasi IoT: Input manual jika mesin offline.</p>
               <form onSubmit={handleAddBottles} className="space-y-4">
                 <div className="space-y-2">
+                  <label className="font-pixel text-[7px] text-slate-500">LOKASI MESIN</label>
+                  <select className="pixel-input w-full px-3 py-2" value={depositMachineId} onChange={e => setDepositMachineId(e.target.value)} required>
+                    {machines.map((m: any) => (<option key={m.id} value={m.id}>{m.name} ({m.location})</option>))}
+                  </select>
+                </div>
+                <div className="space-y-2">
                   <label className="font-pixel text-[7px] text-slate-500">PILIH MAHASISWA</label>
                   <select className="pixel-input w-full px-3 py-2" value={selectedUser} onChange={e => setSelectedUser(e.target.value)} required>
                     <option value="">-- Pilih --</option>
-                    {studentUsers.map(u => (<option key={u.id} value={u.id}>{u.name} ({u.points} xp)</option>))}
+                    {students.map(u => (<option key={u.id} value={u.id}>{u.name} (NIM: {u.nim})</option>))}
                   </select>
                 </div>
                 <div className="space-y-2">
@@ -168,25 +181,25 @@ export default function AdminPanel() {
 
             <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-cyan-500/30 p-5 space-y-4">
               <h3 className="font-pixel text-[9px] text-slate-400 flex items-center gap-2"><Gift className="w-4 h-4 text-purple-400" /> PERMINTAAN TUKAR POIN</h3>
-              {pendingRewards.length === 0 ? (
+              {(!useAppStore().redemptions || useAppStore().redemptions.length === 0) ? (
                 <div className="text-center py-8">
                   <Gift className="w-10 h-10 text-slate-700 mx-auto mb-3" />
                   <span className="font-pixel text-[8px] text-slate-600">TIDAK ADA PERMINTAAN</span>
                 </div>
               ) : (
-                pendingRewards.map((req, i) => (
+                useAppStore().redemptions.map((req, i) => (
                   <div key={i} className="bg-[hsl(270,8%,9%)] border-l-4 border-purple-600 p-4 space-y-3">
                     <div>
-                      <span className="font-pixel text-[9px] text-purple-300">{req.user.name}</span>
-                      <p className="font-pixel-body text-slate-500 text-base">{req.tx.desc}</p>
-                      <p className="font-pixel text-[7px] text-slate-600">{req.tx.date}</p>
+                      <span className="font-pixel text-[9px] text-purple-300">{req.user?.name} (NIM: {req.user?.nim}) - {req.reward?.name}</span>
+                      <p className="font-pixel-body text-slate-500 text-base">Cost: {req.cost_at_redemption} XP</p>
+                      <p className="font-pixel text-[7px] text-slate-600">{req.created_at}</p>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => updateRewardStatus(req.user.id, req.tx.id, 'completed')}
+                      <button onClick={() => updateRewardStatus(req.id, 'completed')}
                         className="pixel-btn flex-1 bg-green-700 hover:bg-green-600 text-green-100 py-2.5">
                         SETUJUI
                       </button>
-                      <button onClick={() => updateRewardStatus(req.user.id, req.tx.id, 'cancelled')}
+                      <button onClick={() => updateRewardStatus(req.id, 'cancelled')}
                         className="pixel-btn flex-1 bg-red-800 hover:bg-red-700 text-red-100 py-2.5"
                         style={{boxShadow: '4px 4px 0 0 rgba(0,0,0,0.4), 4px 0 0 0 hsl(0,40%,25%), -4px 0 0 0 hsl(0,40%,25%), 0 4px 0 0 hsl(0,40%,25%), 0 -4px 0 0 hsl(0,40%,25%)'}}>
                         TOLAK
@@ -195,6 +208,51 @@ export default function AdminPanel() {
                   </div>
                 ))
               )}
+            </div>
+          
+            
+            {/* PENGATURAN GLOBAL */}
+            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-cyan-500/30 p-5 space-y-4 md:col-span-2">
+              <h3 className="font-pixel text-[9px] text-slate-400 flex items-center gap-2"><Star className="w-4 h-4 text-yellow-500" /> PENGATURAN GLOBAL</h3>
+              <div className="bg-slate-800/40 p-4 border border-slate-700/50">
+                <form onSubmit={e => { e.preventDefault(); updateSetting('xp_per_bottle', editXpConfig); }} className="flex items-end gap-4">
+                  <div className="flex-1 space-y-2">
+                    <label className="font-pixel text-[7px] text-slate-500">XP PER BOTOL PLASTIK</label>
+                    <input type="number" className="pixel-input w-full px-3 py-2 text-[9px]" placeholder="100" value={editXpConfig} onChange={e => setEditXpConfig(e.target.value)} required />
+                  </div>
+                  <button type="submit" className="pixel-btn bg-yellow-700 hover:bg-yellow-600 text-yellow-100 py-2 px-6">SIMPAN</button>
+                </form>
+              </div>
+            </div>
+
+            {/* MACHINE MANAGEMENT */}
+            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-cyan-500/30 p-5 space-y-4 md:col-span-2">
+              <h3 className="font-pixel text-[9px] text-slate-400 flex items-center gap-2"><Activity className="w-4 h-4 text-green-500" /> KELOLA MESIN RVM</h3>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <form onSubmit={e => { e.preventDefault(); addMachine(newMachName, newMachLoc, parseInt(newMachCap)); setNewMachName(''); setNewMachLoc(''); setNewMachCap('250'); }} className="space-y-3 bg-slate-800/40 p-4 border border-slate-700/50">
+                    <h4 className="font-pixel text-[8px] text-cyan-400 mb-2">TAMBAH MESIN BARU</h4>
+                    <input className="pixel-input w-full px-3 py-2 text-[9px]" placeholder="Nama (e.g. RVM-03)" value={newMachName} onChange={e => setNewMachName(e.target.value)} required />
+                    <input className="pixel-input w-full px-3 py-2 text-[9px]" placeholder="Lokasi (e.g. Gedung C)" value={newMachLoc} onChange={e => setNewMachLoc(e.target.value)} required />
+                    <input type="number" className="pixel-input w-full px-3 py-2 text-[9px]" placeholder="Kapasitas Max" value={newMachCap} onChange={e => setNewMachCap(e.target.value)} required />
+                    <button type="submit" className="pixel-btn bg-cyan-700 hover:bg-cyan-600 text-cyan-100 w-full py-2">TAMBAH MESIN</button>
+                  </form>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-pixel text-[8px] text-cyan-400 mb-2">DAFTAR MESIN</h4>
+                  {machines.map((m: any) => (
+                    <div key={m.id} className="flex justify-between items-center bg-slate-800/50 p-2 border-l-2 border-cyan-500">
+                      <div>
+                        <span className="font-pixel text-[8px] text-slate-200 block">{m.name}</span>
+                        <span className="font-pixel-body text-[10px] text-slate-500">{m.location}</span>
+                      </div>
+                      <button onClick={() => deleteMachine(m.id)} className="bg-red-900/50 hover:bg-red-800 text-red-300 font-pixel text-[7px] px-2 py-1">HAPUS</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -258,18 +316,18 @@ export default function AdminPanel() {
               </div>
             ) : (
               <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2">
-                {allLogs.map((log, i) => (
-                  <div key={i} className={`flex justify-between items-center p-3 bg-slate-800/50 border-l-4 ${log.tx.type === 'earn' ? 'border-green-500' : 'border-purple-500'}`}>
+                {allLogs.map((log: any, i: number) => (
+                  <div key={i} className={`flex justify-between items-center p-3 bg-slate-800/50 border-l-4 ${log.type === 'earn' ? 'border-green-500' : 'border-purple-500'}`}>
                     <div>
                       <div className="font-pixel text-[9px] text-slate-300 flex items-center gap-2">
                         <span>{log.user.name}</span>
                         <span className="text-slate-500">#{log.user.nim}</span>
                       </div>
-                      <p className="font-pixel-body text-slate-400 text-sm">{log.tx.desc}</p>
-                      <span className="font-pixel text-[7px] text-slate-600">{log.tx.date}</span>
+                      <p className="font-pixel-body text-slate-400 text-sm">{log.desc}</p>
+                      <span className="font-pixel text-[7px] text-slate-600">{log.date}</span>
                     </div>
-                    <div className={`font-pixel text-[9px] ${log.tx.type === 'earn' ? 'text-green-400' : 'text-purple-400'}`}>
-                      {log.tx.type === 'earn' ? '+' : '-'}{log.tx.amount} XP
+                    <div className={`font-pixel text-[9px] ${log.type === 'earn' ? 'text-green-400' : 'text-purple-400'}`}>
+                      {log.type === 'earn' ? '+' : '-'}{log.amount} XP
                     </div>
                   </div>
                 ))}
