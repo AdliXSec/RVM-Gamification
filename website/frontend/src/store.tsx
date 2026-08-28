@@ -92,19 +92,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const refreshData = async () => {
     try {
+      const setRes = await api.get('/settings').catch(()=>null);
+      if(setRes?.data?.settings) setSettings(setRes.data.settings);
+    } catch(e) { console.error('Settings err:', e); }
+
+    try {
       const ldRes = await api.get('/users/leaderboard');
-      setUsers(ldRes.data.leaderboard.map((u: any) => ({ ...u, history: [] })));
+      if (ldRes.data?.leaderboard) setUsers(ldRes.data.leaderboard.map((u: any) => ({ ...u, history: [] })));
     } catch(e) { console.error('Leaderboard err:', e); }
 
     try {
       const statRes = await api.get('/users/campus-stats');
-      const st = statRes.data.stats;
-      setStats({ totalBottles: st.total_bottles, totalCO2: st.total_co2_saved, totalFilament: st.total_filament });
+      const st = statRes.data?.stats;
+      if (st) setStats({ totalBottles: st.total_bottles, totalCO2: st.total_co2_saved, totalFilament: st.total_filament });
     } catch(e) { console.error('Stats err:', e); }
 
     try {
       const mRes = await api.get('/machines');
-      if (mRes.data.machines.length > 0) {
+      if (mRes.data?.machines?.length > 0) {
         setMachines(mRes.data.machines);
         setMachine(prev => {
           const match = mRes.data.machines.find((x: any) => x.id == prev.id) || mRes.data.machines[0];
@@ -116,7 +121,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const rRes = await api.get('/rewards');
-      setRewards(rRes.data.rewards.map((r: any, i: number) => ({
+      if (rRes.data?.rewards) setRewards(rRes.data.rewards.map((r: any, i: number) => ({
         id: r.id, name: r.name, cost: r.cost, desc: r.description || '', color: colors[i % colors.length]
       })));
     } catch(e) { console.error('Rewards err:', e); }
@@ -126,28 +131,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (token && currentUser) {
          if (currentUser.role === 'admin' || currentUser.role === 'officer') {
             const tRes = await api.get('/tickets');
-            setTickets(tRes.data.tickets.map((t: any) => ({
+            if (tRes.data?.tickets) setTickets(tRes.data.tickets.map((t: any) => ({
               id: t.id, machineName: t.machine?.name || 'RVM', capacityAtIssue: t.capacity_at_issue, status: t.status === 'pending' ? 'Pending' : (t.status === 'accepted' ? 'Accepted' : 'Completed'), date: t.created_at
             })));
 
             if (currentUser.role === 'admin') {
               const pendRes = await api.get('/rewards/redemptions/pending');
-              setRedemptions(pendRes.data.redemptions);
+              if (pendRes.data?.redemptions) setRedemptions(pendRes.data.redemptions);
               const studRes = await api.get('/users/students');
-              setStudents(studRes.data.students);
+              if (studRes.data?.students) setStudents(studRes.data.students);
 
               const logsRes = await api.get('/users/history/all');
-              setAllLogs(logsRes.data.data.map((tx: any) => ({ id: tx.id, date: tx.created_at, type: tx.type, amount: tx.amount, desc: tx.description, status: tx.status, user: tx.user })));
+              const logsData = logsRes.data?.data || logsRes.data || [];
+              if (Array.isArray(logsData)) setAllLogs(logsData.map((tx: any) => ({ id: tx.id, date: tx.created_at, type: tx.type, amount: tx.amount, desc: tx.description, status: tx.status, user: tx.user })));
             }
          }
          
          const hRes = await api.get('/users/history');
-         const history = hRes.data.data.map((tx: any) => ({
+         const historyData = hRes.data?.data || hRes.data || [];
+         const history = Array.isArray(historyData) ? historyData.map((tx: any) => ({
              id: tx.id, date: tx.created_at, type: tx.type, amount: tx.amount, desc: tx.description, status: tx.status
-         }));
+         })) : [];
          
          const me = await api.get('/auth/me');
-         setCurrentUser({ ...me.data.user, history });
+         if (me.data?.user) setCurrentUser({ ...me.data.user, history });
       }
     } catch (err) {
       console.error("Auth data err:", err);
