@@ -209,7 +209,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await api.post('/auth/register', { name, nim, email, password: pass, password_confirmation: pass, character });
       localStorage.setItem('token', res.data.token.access_token);
-      setCurrentUser({ ...res.data.user, history: [] });
+      const u = res.data.user;
+      setCurrentUser({ ...u, points: u.points ?? 0, history: [] });
       toast.success("Registrasi berhasil!");
       return true;
     } catch (err: any) {

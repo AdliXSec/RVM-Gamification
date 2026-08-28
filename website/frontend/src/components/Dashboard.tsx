@@ -8,8 +8,9 @@ export default function Dashboard() {
 
   if (!currentUser) return null;
 
-  const level = Math.floor(currentUser.points / 500) + 1;
-  const xpInLevel = currentUser.points % 500;
+  const points = currentUser.points ?? 0;
+  const level = Math.floor(points / 500) + 1;
+  const xpInLevel = points % 500;
   const xpPercent = (xpInLevel / 500) * 100;
 
   return (
@@ -111,7 +112,7 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { icon: <Star className="w-5 h-5 text-yellow-500" />, val: currentUser.points.toString(), label: 'TOTAL XP' },
+                { icon: <Star className="w-5 h-5 text-yellow-500" />, val: String(currentUser.points ?? 0), label: 'TOTAL XP' },
                 { icon: <Trophy className="w-5 h-5 text-yellow-500" />, val: `LVL ${level}`, label: 'LEVEL' },
                 { icon: <Droplets className="w-5 h-5 text-blue-400" />, val: (currentUser.points / Number(settings?.xp_per_bottle || 100)).toFixed(0), label: 'BOTOL' },
                 { icon: <Leaf className="w-5 h-5 text-green-500" />, val: `${((currentUser.points / Number(settings?.xp_per_bottle || 100)) * 0.04).toFixed(1)}`, label: 'KG CO2' },
@@ -336,7 +337,7 @@ export default function Dashboard() {
                 </div>
                 <div className="text-right">
                   <p className="font-pixel text-yellow-500 text-sm flex items-center gap-1 justify-end"><Star className="w-3 h-3" /> {currentUser.points}</p>
-                  <p className="font-pixel text-[7px] text-slate-600 mt-1">LVL {Math.floor(currentUser.points / 500) + 1}</p>
+                  <p className="font-pixel text-[7px] text-slate-600 mt-1">LVL {Math.floor((currentUser.points ?? 0) / 500) + 1}</p>
                 </div>
               </div>
 
