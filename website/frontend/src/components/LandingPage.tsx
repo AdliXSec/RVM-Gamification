@@ -95,7 +95,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[hsl(220,15%,7%)] text-slate-200 overflow-x-hidden selection:bg-green-500/30 font-pixel-body">
+    <div className="min-h-screen bg-[hsl(220,15%,7%)] text-slate-200 selection:bg-green-500/30 font-pixel-body">
       
       {/* Navbar */}
       <nav className="fixed top-0 w-full p-4 md:px-8 flex justify-between items-center z-50 bg-[hsl(220,15%,7%)]/90 backdrop-blur-md border-b border-slate-800/50">
