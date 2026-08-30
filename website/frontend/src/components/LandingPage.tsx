@@ -39,10 +39,10 @@ export default function LandingPage() {
         </div>
 
         {/* Hero Content - Split Layout */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center mt-8">
+        <div className="relative z-10 w-full max-w-7xl mx-auto grid md:grid-cols-12 gap-8 items-center mt-8">
           
           {/* Left Column: Text Content */}
-          <div className="flex flex-col items-start text-left">
+          <div className="flex flex-col items-start text-left md:col-span-7 z-20">
             <div className="pixel-border-green px-6 py-2 bg-green-950/60 mb-8 inline-block animate-pulse backdrop-blur-sm">
               <span className="font-pixel text-[10px] text-green-400 tracking-[0.2em] flex items-center gap-2">
                 <Star className="w-3 h-3" /> SMART CAMPUS QUEST 2026 <Star className="w-3 h-3" />
@@ -58,7 +58,7 @@ export default function LandingPage() {
 
             <p className="font-pixel-body text-slate-300 text-lg md:text-2xl mb-10 max-w-xl leading-relaxed drop-shadow-lg">
               Mesin RVM pintar kampus mengubah limbah botolmu menjadi reward eksklusif. 
-              <span className="text-green-400 block mt-3 text-xl font-bold">1 Botol = +{settings?.xp_per_bottle || '10'} XP</span>
+              <span className="text-green-400 block mt-3 text-xl font-bold">1 Botol = +{settings?.xp_per_bottle || '100'} XP</span>
             </p>
 
             <Link
@@ -71,22 +71,24 @@ export default function LandingPage() {
           </div>
 
           {/* Right Column: Assets & Characters Display */}
-          <div className="relative w-full h-[400px] md:h-[500px] flex justify-center items-center pointer-events-none mt-12 md:mt-0">
-            {/* Vending Machine Center */}
-            <div className="relative z-20 pixel-float">
-              <div className="absolute inset-0 bg-green-500 blur-[50px] opacity-40 rounded-full" />
-              <img src="/assets/vending_machine.png" alt="Vending Machine" className="h-72 md:h-96 object-contain relative drop-shadow-[0_0_25px_rgba(34,197,94,0.5)]" />
-            </div>
+          <div className="relative w-full h-[400px] md:h-[500px] flex justify-center md:justify-end items-center pointer-events-none mt-12 md:mt-0 md:col-span-5">
+            <div className="relative w-full max-w-[400px] h-full flex justify-center items-center">
+              {/* Vending Machine Center */}
+              <div className="relative z-20 pixel-float">
+                <div className="absolute inset-0 bg-green-500 blur-[50px] opacity-40 rounded-full" />
+                <img src="/assets/vending_machine.png" alt="Vending Machine" className="h-72 md:h-96 object-contain relative drop-shadow-[0_0_25px_rgba(34,197,94,0.5)]" />
+              </div>
 
-            {/* Characters around */}
-            <div className="absolute left-[5%] md:left-0 bottom-[10%] z-30 patrol-right">
-              <img src="/character/ninja.png" alt="Ninja" className="h-28 md:h-40 object-contain drop-shadow-xl" />
-            </div>
-            <div className="absolute right-[5%] md:right-0 bottom-[10%] z-30 patrol-left" style={{ animationDelay: '-2s' }}>
-              <img src="/character/girl.png" alt="Girl" className="h-28 md:h-40 object-contain drop-shadow-xl" />
-            </div>
-            <div className="absolute left-[20%] bottom-[5%] z-10 patrol-left hidden md:block" style={{ animationDelay: '-5s' }}>
-              <img src="/character/knight.png" alt="Knight" className="h-32 md:h-48 object-contain drop-shadow-xl opacity-80" />
+              {/* Characters around */}
+              <div className="absolute left-[5%] md:-left-[10%] bottom-[10%] z-30 patrol-right">
+                <img src="/character/ninja.png" alt="Ninja" className="h-28 md:h-40 object-contain drop-shadow-xl" />
+              </div>
+              <div className="absolute right-[5%] md:right-[5%] bottom-[10%] z-30 patrol-left" style={{ animationDelay: '-2s' }}>
+                <img src="/character/girl.png" alt="Girl" className="h-28 md:h-40 object-contain drop-shadow-xl" />
+              </div>
+              <div className="absolute left-[20%] md:left-[10%] bottom-[5%] z-10 patrol-left hidden md:block" style={{ animationDelay: '-5s' }}>
+                <img src="/character/knight.png" alt="Knight" className="h-32 md:h-48 object-contain drop-shadow-xl opacity-80" />
+              </div>
             </div>
           </div>
 
