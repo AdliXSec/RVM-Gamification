@@ -10,27 +10,50 @@ export default function LandingPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      
-      
-      // Video Frame-by-Frame Scrubbing Logic
-      if (videoSectionRef.current && videoRef.current) {
+    const video = videoRef.current;
+    
+    // Force load the first frame for smooth initial scrubbing
+    if (video) {
+      video.pause();
+      const loadInitialFrame = () => {
+        if (!isNaN(video.duration)) {
+           video.currentTime = 0.01;
+        }
+      };
+      video.addEventListener('loadedmetadata', loadInitialFrame);
+    }
+    
+    let ticking = false;
+    
+    const updateVideoTime = () => {
+      if (videoSectionRef.current && video && !isNaN(video.duration)) {
         const rect = videoSectionRef.current.getBoundingClientRect();
         const scrollRange = rect.height - window.innerHeight;
         
-        // Progress goes from 0 to 1 as the sticky section is scrolled
         let progress = -rect.top / scrollRange;
-        if (progress < 0) progress = 0;
-        if (progress > 1) progress = 1;
+        progress = Math.max(0, Math.min(1, progress));
         
-        if (videoRef.current.duration) {
-          // Smoothly update the current time of the video based on scroll progress
-          videoRef.current.currentTime = videoRef.current.duration * progress;
-        }
+        // Apply frame update
+        video.currentTime = video.duration * progress;
+      }
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(updateVideoTime);
+        ticking = true;
       }
     };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Trigger initial calc
+    handleScroll();
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (video) video.removeEventListener('loadedmetadata', () => {});
+    };
   }, []);
 
   return (
@@ -205,7 +228,7 @@ export default function LandingPage() {
                   muted 
                   playsInline
                   className="w-full rounded pixel-render shadow-inner"
-                  preload="metadata"
+                  preload="auto"
                 >
                   <source src="/assets/animation_vending_machine.mp4" type="video/mp4" />
                 </video>
