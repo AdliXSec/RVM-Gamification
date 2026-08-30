@@ -1,58 +1,96 @@
 import { ArrowRight, Star, Cpu, Trophy, Activity, Zap, Shield, CheckCircle2, Leaf } from 'lucide-react';
-import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
 import { useAppStore } from '../store';
 
 export default function LandingPage() {
   const { settings } = useAppStore();
-  
   const videoSectionRef = useRef<HTMLElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [activeStep, setActiveStep] = useState(-1);
+  const imagesRef = useRef<HTMLImageElement[]>([]);
+  const frameCount = 240;
 
   useEffect(() => {
-    const video = videoRef.current;
-    
-    // Force load the first frame for smooth initial scrubbing
-    if (video) {
-      video.pause();
-      const loadInitialFrame = () => {
-        if (!isNaN(video.duration)) {
-           video.currentTime = 0.01;
-        }
-      };
-      video.addEventListener('loadedmetadata', loadInitialFrame);
+    // 1. Preload Images
+    for (let i = 1; i <= frameCount; i++) {
+      const img = new Image();
+      const num = i.toString().padStart(3, '0');
+      img.src = `/animation_vending_machine_frames/frame_${num}.jpg`;
+      imagesRef.current.push(img);
     }
     
+    // Draw initial frame once loaded
+    imagesRef.current[0].onload = () => {
+      if (canvasRef.current) {
+        const ctx = canvasRef.current.getContext('2d');
+        if (ctx) {
+          // Adjust canvas size to match image aspect ratio if needed, or draw stretched.
+          // Using standard 16:9 1080p dimensions for canvas internal buffer
+          canvasRef.current.width = 1920;
+          canvasRef.current.height = 1080;
+          ctx.drawImage(imagesRef.current[0], 0, 0, 1920, 1080);
+        }
+      }
+    };
+
     let ticking = false;
-    
-    const updateVideoTime = () => {
-      if (videoSectionRef.current && video && !isNaN(video.duration)) {
+    let lastProgress = 0;
+
+    const updateCanvasAndText = () => {
+      if (videoSectionRef.current && canvasRef.current) {
         const rect = videoSectionRef.current.getBoundingClientRect();
         const scrollRange = rect.height - window.innerHeight;
         
         let progress = -rect.top / scrollRange;
         progress = Math.max(0, Math.min(1, progress));
         
-        // Apply frame update
-        video.currentTime = video.duration * progress;
+        if (Math.abs(progress - lastProgress) > 0.001) {
+          lastProgress = progress;
+          
+          // --- 1. Update Canvas Frame ---
+          const frameIndex = Math.min(
+            frameCount - 1,
+            Math.floor(progress * frameCount)
+          );
+          
+          const img = imagesRef.current[frameIndex];
+          if (img && img.complete) {
+            const ctx = canvasRef.current.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, 1920, 1080);
+            }
+          }
+
+          // --- 2. Update Active Step (Text) ---
+          let step = -1;
+          if (progress > 0.1 && progress <= 0.3) step = 0;
+          else if (progress > 0.3 && progress <= 0.5) step = 1;
+          else if (progress > 0.5 && progress <= 0.7) step = 2;
+          else if (progress > 0.7 && progress <= 0.85) step = 3;
+          else if (progress > 0.85) step = 4;
+
+          setActiveStep((prev) => {
+             if (prev !== step) return step;
+             return prev;
+          });
+        }
       }
       ticking = false;
     };
 
     const handleScroll = () => {
       if (!ticking) {
-        requestAnimationFrame(updateVideoTime);
+        requestAnimationFrame(updateCanvasAndText);
         ticking = true;
       }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    // Trigger initial calc
     handleScroll();
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      if (video) video.removeEventListener('loadedmetadata', () => {});
     };
   }, []);
 
@@ -72,8 +110,6 @@ export default function LandingPage() {
 
       {/* Hero Section with Cinematic Video Background */}
       <section className="relative min-h-screen flex items-center pt-20 pb-10 px-4 md:px-12 overflow-hidden scanlines">
-        
-        {/* Video Background */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
           <video 
             autoPlay 
@@ -84,15 +120,11 @@ export default function LandingPage() {
           >
             <source src="/assets/cinematic_bg.mp4" type="video/mp4" />
           </video>
-          {/* Neutral dark gradient overlay for cinematic feel without being overwhelmingly green */}
           <div className="absolute inset-0 bg-gradient-to-b from-[hsl(220,15%,7%)]/90 via-[hsl(220,15%,7%)]/50 to-[hsl(220,15%,7%)] mix-blend-multiply" />
           <div className="absolute inset-0 bg-[hsl(220,15%,7%)]/20" />
         </div>
 
-        {/* Hero Content - Split Layout */}
         <div className="relative z-10 w-full max-w-7xl mx-auto grid md:grid-cols-12 gap-8 items-center mt-8">
-          
-          {/* Left Column: Text Content */}
           <div className="flex flex-col items-start text-left md:col-span-7 z-20">
             <div className="pixel-border px-6 py-2 bg-slate-900/60 mb-8 inline-block animate-pulse backdrop-blur-sm">
               <span className="font-pixel text-[10px] text-slate-300 tracking-[0.2em] flex items-center gap-2">
@@ -121,18 +153,14 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Right Column: Assets Display */}
           <div className="relative w-full h-[400px] md:h-[500px] flex justify-center md:justify-end items-center pointer-events-none mt-12 md:mt-0 md:col-span-5">
             <div className="relative w-full max-w-[400px] h-full flex justify-center items-center">
-              {/* Vending Machine Center */}
               <div className="relative z-20 pixel-float">
-                {/* Subtle neutral/green glow instead of blinding green */}
                 <div className="absolute inset-0 bg-green-500 blur-[60px] opacity-10 rounded-full" />
                 <img src="/assets/vending_machine.png" alt="Vending Machine" className="h-72 md:h-96 object-contain relative drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)]" />
               </div>
             </div>
           </div>
-
         </div>
       </section>
 
@@ -150,41 +178,48 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Animation Video Showcase Section - Scroll Tied */}
-      <section ref={videoSectionRef} className="bg-[hsl(220,18%,10%)] relative z-10 border-b-4 border-[hsl(220,15%,14%)] h-[300vh]">
-        {/* Sticky Container - stays on screen while scrolling through the 300vh height */}
+      {/* Image Sequence Showcase Section - Scroll Tied */}
+      <section ref={videoSectionRef} className="bg-[hsl(220,18%,10%)] relative z-10 border-b-4 border-[hsl(220,15%,14%)] h-[400vh]">
+        {/* Sticky Container - stays on screen while scrolling through the 400vh height */}
         <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden px-4 py-8">
-          {/* Subtle decorative background lights */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/5 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-slate-500/5 blur-[120px] rounded-full pointer-events-none" />
 
           <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-12 gap-16 items-center">
             
-            {/* Left Side: Comprehensive Guide and Benefits */}
+            {/* Left Side: Animated Dynamic Guide */}
             <div className="lg:col-span-7 space-y-8 md:space-y-12">
-              <div>
+              <div className={`transition-opacity duration-500 ${activeStep === -1 ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
                 <h2 className="font-pixel text-slate-200 text-2xl md:text-3xl drop-shadow-md mb-6">
                   BAGAIMANA CARA KERJANYA?
                 </h2>
                 <p className="font-pixel-body text-slate-400 text-lg leading-relaxed">
-                  Mesin Reverse Vending Machine (RVM) kami terintegrasi dengan sensor AI cerdas. Mengubah botol bekas menjadi material riset kini semudah bermain game. Scroll perlahan untuk melihat simulasi.
+                  Mesin Reverse Vending Machine (RVM) kami terintegrasi dengan sensor AI cerdas. Mengubah botol bekas menjadi material riset kini semudah bermain game. 
+                  <span className="block mt-4 text-green-500 animate-pulse">SCROLL KE BAWAH UNTUK MELIHAT SIMULASI &gt;&gt;</span>
                 </p>
               </div>
 
-              {/* Cara Penggunaan Steps */}
-              <div className="space-y-4 md:space-y-6">
-                <h3 className="font-pixel text-slate-200 text-sm flex items-center gap-2 border-b-2 border-slate-800 pb-2">
+              {/* Dynamic Steps based on scroll */}
+              <div className={`transition-all duration-700 ${activeStep >= 0 && activeStep <= 3 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10 absolute pointer-events-none'}`}>
+                <h3 className="font-pixel text-slate-200 text-sm flex items-center gap-2 border-b-2 border-slate-800 pb-2 mb-8">
                   <Activity className="w-4 h-4 text-green-500" /> PANDUAN PENGGUNAAN
                 </h3>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-6">
                   {[
-                    { step: '1', title: 'LOGIN', desc: 'Gunakan panel layar sentuh di mesin untuk login ke akun RVM Quest.' },
-                    { step: '2', title: 'MASUKKAN BOTOL', desc: 'Masukkan botol PET kosong. AI akan menimbang dan memvalidasi material.' },
-                    { step: '3', title: 'PROSES CACAH', desc: 'Botol akan dihancurkan menjadi flake plastik di dalam mesin.' },
-                    { step: '4', title: 'KLAIM REWARD', desc: 'XP otomatis masuk ke dashboard. Tukarkan dengan voucher menarik!' }
+                    { step: 0, num: '1', title: 'LOGIN', desc: 'Gunakan panel layar sentuh di mesin untuk login ke akun RVM Quest.' },
+                    { step: 1, num: '2', title: 'MASUKKAN BOTOL', desc: 'Masukkan botol PET kosong. AI akan menimbang dan memvalidasi material secara presisi.' },
+                    { step: 2, num: '3', title: 'PROSES CACAH', desc: 'Botol akan dihancurkan menjadi flake plastik di dalam mesin.' },
+                    { step: 3, num: '4', title: 'KLAIM REWARD', desc: 'XP otomatis masuk ke dashboard. Tukarkan dengan voucher menarik!' }
                   ].map((s) => (
-                    <div key={s.step} className="bg-slate-900/50 p-4 pixel-border border-slate-800 flex gap-4 items-start">
-                      <span className="font-pixel text-green-500 text-xl">{s.step}</span>
+                    <div 
+                      key={s.step} 
+                      className={`p-4 pixel-border flex gap-4 items-start transition-all duration-500 ${
+                        activeStep === s.step 
+                          ? 'bg-slate-800/80 border-green-500 scale-105 shadow-[0_0_15px_rgba(34,197,94,0.2)]' 
+                          : 'bg-slate-900/30 border-slate-800 opacity-40 scale-95'
+                      }`}
+                    >
+                      <span className={`font-pixel text-xl ${activeStep === s.step ? 'text-green-400' : 'text-slate-600'}`}>{s.num}</span>
                       <div>
                         <h4 className="font-pixel text-slate-200 text-[10px] mb-2">{s.title}</h4>
                         <p className="font-pixel-body text-slate-400 text-sm">{s.desc}</p>
@@ -194,52 +229,51 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Benefits */}
-              <div className="space-y-4">
-                <h3 className="font-pixel text-slate-200 text-sm flex items-center gap-2 border-b-2 border-slate-800 pb-2">
+              {/* Dynamic Benefits based on scroll */}
+              <div className={`transition-all duration-700 ${activeStep === 4 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 absolute pointer-events-none'}`}>
+                <h3 className="font-pixel text-slate-200 text-sm flex items-center gap-2 border-b-2 border-slate-800 pb-2 mb-8">
                   <Star className="w-4 h-4 text-yellow-500" /> MANFAAT SYSTEM
                 </h3>
-                <ul className="space-y-3 font-pixel-body text-slate-300">
-                  <li className="flex items-start gap-3 bg-[hsl(220,15%,12%)] p-3 pixel-border border-slate-700">
-                    <Trophy className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+                <ul className="space-y-6 font-pixel-body text-slate-300">
+                  <li className="flex items-start gap-4 bg-[hsl(220,15%,12%)] p-6 pixel-border border-slate-700 shadow-xl">
+                    <Trophy className="w-8 h-8 text-yellow-500 shrink-0 mt-0.5 animate-bounce" />
                     <div>
-                      <strong className="block text-green-400 font-pixel text-[10px] mb-1">UNTUK KAMU</strong>
-                      Dapatkan XP dari setiap botol, tingkatkan level, panjat leaderboard kampus, dan nikmati reward berupa potongan UKT hingga voucher kantin.
+                      <strong className="block text-green-400 font-pixel text-[12px] mb-2">UNTUK KAMU</strong>
+                      <p className="text-slate-400 text-base leading-relaxed">
+                        Dapatkan XP dari setiap botol, tingkatkan level, panjat leaderboard kampus, dan nikmati reward berupa potongan UKT hingga voucher kantin eksklusif.
+                      </p>
                     </div>
                   </li>
-                  <li className="flex items-start gap-3 bg-[hsl(220,15%,12%)] p-3 pixel-border border-slate-700">
-                    <Leaf className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                  <li className="flex items-start gap-4 bg-[hsl(220,15%,12%)] p-6 pixel-border border-slate-700 shadow-xl">
+                    <Leaf className="w-8 h-8 text-emerald-500 shrink-0 mt-0.5 animate-pulse" />
                     <div>
-                      <strong className="block text-emerald-400 font-pixel text-[10px] mb-1">UNTUK LINGKUNGAN & RISET</strong>
-                      Limbah plastimu langsung diolah menjadi filamen 3D printer untuk mendukung penelitian mahasiswa teknik di kampus.
+                      <strong className="block text-emerald-400 font-pixel text-[12px] mb-2">UNTUK LINGKUNGAN & RISET</strong>
+                      <p className="text-slate-400 text-base leading-relaxed">
+                        Limbah plastimu langsung diolah menjadi filamen 3D printer untuk mendukung penelitian mahasiswa teknik dan menciptakan ekonomi sirkular sejati di kampus.
+                      </p>
                     </div>
                   </li>
                 </ul>
               </div>
             </div>
 
-            {/* Right Side: Scroll-tied Animated Video */}
+            {/* Right Side: Scroll-tied Animated Canvas Sequence */}
             <div className="lg:col-span-5 relative mt-8 lg:mt-0">
               <div className="relative pixel-border bg-[hsl(220,15%,12%)] p-3 shadow-2xl border-slate-700">
                 
-                {/* The video element bound to scroll */}
-                <video 
-                  ref={videoRef}
-                  muted 
-                  playsInline
-                  className="w-full rounded pixel-render shadow-inner"
-                  preload="auto"
-                >
-                  <source src="/assets/animation_vending_machine.mp4" type="video/mp4" />
-                </video>
+                {/* The Canvas element rendering the image sequence */}
+                <canvas 
+                  ref={canvasRef}
+                  className="w-full h-auto aspect-video rounded pixel-render shadow-inner bg-black"
+                />
                 
-                <div className="absolute -top-4 -right-4 bg-slate-800 text-slate-300 font-pixel text-[8px] px-3 py-2 rounded animate-pulse shadow-lg flex items-center gap-2 pixel-border">
-                  <Activity className="w-3 h-3 text-green-500" /> SCROLL PROGRESS
+                <div className="absolute -top-4 -right-4 bg-slate-800 text-slate-300 font-pixel text-[8px] px-3 py-2 rounded shadow-lg flex items-center gap-2 pixel-border">
+                  <Activity className="w-3 h-3 text-green-500 animate-pulse" /> SCANNING
                 </div>
                 
                 <div className="absolute -bottom-6 -left-6 bg-[hsl(220,15%,10%)] text-green-400 pixel-border border-slate-800 font-pixel text-[8px] px-4 py-3 shadow-2xl flex flex-col gap-1">
                   <span className="text-slate-500">STATUS:</span>
-                  <span className="flex items-center gap-2"><CheckCircle2 className="w-3 h-3" /> ONLINE</span>
+                  <span className="flex items-center gap-2"><CheckCircle2 className="w-3 h-3" /> LIVE FEED</span>
                 </div>
               </div>
             </div>
