@@ -78,17 +78,6 @@ export default function LandingPage() {
                 <div className="absolute inset-0 bg-green-500 blur-[50px] opacity-40 rounded-full" />
                 <img src="/assets/vending_machine.png" alt="Vending Machine" className="h-72 md:h-96 object-contain relative drop-shadow-[0_0_25px_rgba(34,197,94,0.5)]" />
               </div>
-
-              {/* Characters around */}
-              <div className="absolute left-[5%] md:-left-[10%] bottom-[10%] z-30 patrol-right">
-                <img src="/character/ninja.png" alt="Ninja" className="h-28 md:h-40 object-contain drop-shadow-xl" />
-              </div>
-              <div className="absolute right-[5%] md:right-[5%] bottom-[10%] z-30 patrol-left" style={{ animationDelay: '-2s' }}>
-                <img src="/character/girl.png" alt="Girl" className="h-28 md:h-40 object-contain drop-shadow-xl" />
-              </div>
-              <div className="absolute left-[20%] md:left-[10%] bottom-[5%] z-10 patrol-left hidden md:block" style={{ animationDelay: '-5s' }}>
-                <img src="/character/knight.png" alt="Knight" className="h-32 md:h-48 object-contain drop-shadow-xl opacity-80" />
-              </div>
             </div>
           </div>
 
