@@ -48,6 +48,8 @@ interface AppState {
   rewards: RewardItem[];
   redemptions: any[]; // for admin to see pending redemptions
   allLogs: any[];
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
   settings: Record<string, string>;
   updateSetting: (key: string, value: string) => Promise<void>;
   students: { id: string; name: string; nim: string }[];
@@ -87,6 +89,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [redemptions, setRedemptions] = useState<any[]>([]);
   const [allLogs, setAllLogs] = useState<any[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({ 'xp_per_bottle': '100' });
+
+  const [theme, setTheme] = useState<'light' | 'dark'>(
+    (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
+  );
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  };
+
 
   const colors = ['bg-green-100 text-green-600', 'bg-rose-100 text-rose-600', 'bg-amber-100 text-amber-600', 'bg-cyan-100 text-cyan-600', 'bg-indigo-100 text-indigo-600'];
 
@@ -336,7 +356,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     <AppContext.Provider value={{ 
       currentUser, users, students, machine, tickets, stats, rewards, redemptions, allLogs, machines,
       login, register, logout, adminAddBottles, setMachineMaxCapacity, 
-      acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward, refreshData, setActiveMachine, addMachine, deleteMachine, settings, updateSetting 
+      acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward, refreshData, setActiveMachine, addMachine, deleteMachine, settings, updateSetting, theme, toggleTheme 
     }}>
       {children}
     </AppContext.Provider>
