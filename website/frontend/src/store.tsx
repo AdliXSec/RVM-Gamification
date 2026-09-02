@@ -92,9 +92,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({ 'xp_per_bottle': '100' });
 
-  const [theme, setTheme] = useState<'light' | 'dark'>(
-    (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
-  );
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('theme_preference');
+    if (saved) return saved as 'light' | 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem('theme_preference')) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -102,11 +115,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } else {
       document.documentElement.classList.remove('dark');
     }
-    localStorage.setItem('theme', theme);
+    // We do NOT save to localStorage here automatically, 
+    // so it continues to follow system preference until manually toggled.
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+    setTheme(prev => {
+      const nextTheme = prev === 'light' ? 'dark' : 'light';
+      localStorage.setItem('theme_preference', nextTheme); // User explicitly sets preference
+      return nextTheme;
+    });
   };
 
 
