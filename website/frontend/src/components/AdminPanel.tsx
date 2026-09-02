@@ -91,6 +91,7 @@ export default function AdminPanel() {
             { key: 'users', label: 'PLAYER_DATA', icon: <Users className="w-3 h-3" /> },
             { key: 'catalog', label: 'LOOT_TABLE', icon: <Tag className="w-3 h-3" /> },
             { key: 'logs', label: 'GLOBAL_LOGS', icon: <Clock className="w-3 h-3" /> },
+            { key: 'content', label: 'CONTENT', icon: <HelpCircle className="w-3 h-3" /> },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key as typeof tab)}
               className={`font-pixel text-[8px] md:text-[10px] px-4 py-4 border-b-4 transition-colors whitespace-nowrap flex items-center gap-2 ${
