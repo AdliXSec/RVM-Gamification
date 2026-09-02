@@ -1,10 +1,10 @@
 import { useAppStore } from '../store';
 import { useState } from 'react';
-import { LogOut, Star, Trophy, Droplets, Leaf, Activity, Box, AlertCircle, ShoppingBag, Clock, BookOpen, Award, Gift, Crown, Medal, Flame, Swords } from 'lucide-react';
+import { LogOut, Star, Trophy, Droplets, Leaf, Activity, Box, AlertCircle, ShoppingBag, Clock, BookOpen, Award, Gift, Crown, Medal, Flame, Swords, Bell } from 'lucide-react';
 
 export default function Dashboard() {
-  const { currentUser, users, stats, machines, rewards, logout, redeemReward, settings } = useAppStore();
-  const [tab, setTab] = useState<'home' | 'redeem' | 'history' | 'guide' | 'leaderboard'>('home');
+  const { currentUser, users, stats, machines, rewards, logout, redeemReward, settings, notifications } = useAppStore();
+  const [tab, setTab] = useState<'home' | 'redeem' | 'history' | 'guide' | 'leaderboard' | 'notifications'>('home');
 
   if (!currentUser) return null;
 
@@ -48,6 +48,7 @@ export default function Dashboard() {
             { key: 'redeem', label: 'TUKAR', icon: <ShoppingBag className="w-3 h-3" /> },
             { key: 'history', label: 'LOG', icon: <Clock className="w-3 h-3" /> },
             { key: 'guide', label: 'GUIDE', icon: <BookOpen className="w-3 h-3" /> },
+            { key: 'notifications', label: 'INFO', icon: <Bell className="w-3 h-3" /> },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key as typeof tab)}
               className={`font-pixel text-[8px] md:text-[9px] px-4 py-4 border-b-4 transition-colors whitespace-nowrap flex items-center gap-2 ${
@@ -305,7 +306,44 @@ export default function Dashboard() {
         )}
 
         {/* ====== LEADERBOARD ====== */}
-        {tab === 'leaderboard' && (() => {
+        
+          {tab === 'notifications' && (
+            <div className="space-y-6">
+              <div className="bg-slate-900/60 p-4 border-2 border-slate-700/50 flex items-center justify-between">
+                <h3 className="font-pixel text-slate-100 text-lg flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-amber-500" /> NOTIFIKASI SISTEM
+                </h3>
+                <span className="font-pixel text-[10px] text-slate-400">INFO 12 JAM TERAKHIR</span>
+              </div>
+              
+              <div className="space-y-3">
+                {notifications && notifications.length > 0 ? (
+                  notifications.map((n: any) => (
+                    <div key={n.id} className="bg-slate-800/80 p-4 border-l-4 border-slate-700 pixel-border hover:border-amber-500/50 transition-colors flex items-start gap-4">
+                      <div className="mt-1">
+                        {n.type === 'reward' ? (
+                          <Gift className="w-5 h-5 text-green-400" />
+                        ) : (
+                          <Droplets className="w-5 h-5 text-blue-400" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-pixel-body text-slate-200 text-sm md:text-base mb-1">{n.message}</p>
+                        <p className="font-pixel text-[8px] text-slate-400">{new Date(n.timestamp).toLocaleString('id-ID')}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-10 bg-slate-900/60 pixel-border border-slate-700/50">
+                    <AlertCircle className="w-8 h-8 text-slate-600 mx-auto mb-3" />
+                    <p className="font-pixel text-slate-400 text-xs">Belum ada notifikasi baru dalam 12 jam terakhir.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {tab === 'leaderboard' && (() => {
           const ranked = [...users]
             .filter(u => u.role === 'student')
             .sort((a, b) => b.points - a.points);

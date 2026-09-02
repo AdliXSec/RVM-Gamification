@@ -26,6 +26,13 @@ async function fetchApi(endpoint: string, options: RequestInit = {}) {
   }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      // If we are in the browser, optionally reload or redirect
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login') && !window.location.pathname.includes('/register') && window.location.pathname !== '/') {
+        window.location.href = '/login';
+      }
+    }
     const error: any = new Error(data?.message || 'API Error');
     error.response = { data };
     error.status = response.status;

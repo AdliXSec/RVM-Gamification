@@ -48,6 +48,7 @@ interface AppState {
   rewards: RewardItem[];
   redemptions: any[]; // for admin to see pending redemptions
   allLogs: any[];
+  notifications: any[];
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   settings: Record<string, string>;
@@ -88,6 +89,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [rewards, setRewards] = useState<RewardItem[]>([]);
   const [redemptions, setRedemptions] = useState<any[]>([]);
   const [allLogs, setAllLogs] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({ 'xp_per_bottle': '100' });
 
   const [theme, setTheme] = useState<'light' | 'dark'>(
@@ -112,6 +114,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const refreshData = async () => {
     try {
+      const notifRes = await api.get('/notifications').catch(()=>null);
+      if (notifRes?.data?.notifications) setNotifications(notifRes.data.notifications);
+      
       const setRes = await api.get('/settings').catch(()=>null);
       if(setRes?.data?.settings) setSettings(setRes.data.settings);
     } catch(e) { console.error('Settings err:', e); }
@@ -354,7 +359,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AppContext.Provider value={{ 
-      currentUser, users, students, machine, tickets, stats, rewards, redemptions, allLogs, machines,
+      currentUser, users, students, machine, tickets, stats, rewards, redemptions, allLogs, notifications, machines,
       login, register, logout, adminAddBottles, setMachineMaxCapacity, 
       acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward, refreshData, setActiveMachine, addMachine, deleteMachine, settings, updateSetting, theme, toggleTheme 
     }}>

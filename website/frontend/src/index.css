@@ -144,19 +144,31 @@
 /* Pixel input */
 .pixel-input {
   border-radius: 0 !important;
-  border: 3px solid hsl(220 12% 22%) !important;
-  background: hsl(220 12% 10%) !important;
+  border: 3px solid theme('colors.slate.300') !important;
+  background: theme('colors.white') !important;
   font-family: 'VT323', monospace !important;
   font-size: 20px !important;
-  color: hsl(0 0% 80%) !important;
+  padding-left: 12px;
+  color: theme('colors.slate.900') !important;
+}
+html.dark .pixel-input {
+  border-color: theme('colors.slate.700') !important;
+  background: theme('colors.slate.900') !important;
+  color: theme('colors.slate.100') !important;
 }
 .pixel-input:focus {
-  border-color: hsl(142 50% 40%) !important;
+  border-color: theme('colors.green.500') !important;
   box-shadow: 0 0 0 0 transparent !important;
   outline: none !important;
 }
+html.dark .pixel-input:focus {
+  border-color: theme('colors.green.500') !important;
+}
 .pixel-input::placeholder {
-  color: hsl(220 8% 30%) !important;
+  color: theme('colors.slate.400') !important;
+}
+html.dark .pixel-input::placeholder {
+  color: theme('colors.slate.600') !important;
 }
 
 /* Scanlines */

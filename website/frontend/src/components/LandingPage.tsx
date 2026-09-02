@@ -1,4 +1,4 @@
-import { ArrowRight, Star,Trophy, Activity,Leaf, ChevronDown, Sun, Moon } from 'lucide-react';
+import { ArrowRight, Star, Trophy, Activity, Leaf, ChevronDown, Sun, Moon, Crown, Monitor, MapPin, Cpu, Box } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { useAppStore } from '../store';
@@ -35,7 +35,7 @@ const MANFAAT_SYSTEM = [
 // ==========================================
 
 export default function LandingPage() {
-  const { settings, theme, toggleTheme } = useAppStore();
+  const { settings, theme, toggleTheme, notifications } = useAppStore();
   const videoSectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [activeStep, setActiveStep] = useState(-1);
@@ -48,20 +48,26 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => {
-    api.get('/users/leaderboard')
-      .then(res => {
-        if (res.data && res.data.leaderboard) {
-          setLeaderboard(res.data.leaderboard);
-        }
-      })
-      .catch(err => console.error('Failed to fetch leaderboard', err));
+    const fetchData = () => {
+      api.get('/users/leaderboard')
+        .then(res => {
+          if (res.data && res.data.leaderboard) {
+            setLeaderboard(res.data.leaderboard);
+          }
+        })
+        .catch(err => console.error('Failed to fetch leaderboard', err));
 
-    api.get('/machines')
-      .then(res => {
-        if (res.data) setMachines(res.data);
-      })
-      .catch(err => console.error('Failed to fetch machines', err))
-      .finally(() => setLoadingMachines(false));
+      api.get('/machines')
+        .then(res => {
+          if (res.data && res.data.machines) setMachines(res.data.machines); else if (Array.isArray(res.data)) setMachines(res.data);
+        })
+        .catch(err => console.error('Failed to fetch machines', err))
+        .finally(() => setLoadingMachines(false));
+    };
+
+    fetchData(); // Fetch immediately on mount
+    const interval = setInterval(fetchData, 5000); // Poll every 5 seconds for real-time updates
+    return () => clearInterval(interval);
   }, []);
 
 
@@ -171,11 +177,11 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-24 pb-12 px-4 md:px-12 overflow-hidden">
         {/* Background Video (Cleaned up gradients) */}
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-100 dark:bg-[#0b1120]">
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-100 dark:bg-slate-900">
           <video autoPlay loop muted playsInline className="absolute top-1/2 left-1/2 min-w-full min-h-full -translate-x-1/2 -translate-y-1/2 object-cover opacity-80 mix-blend-luminosity dark:mix-blend-normal">
             <source src="/assets/cinematic_bg.mp4" type="video/mp4" />
           </video>
-          <div className="absolute inset-0 bg-white/80 dark:bg-[#0b1120]/80 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-[2px]" />
         </div>
 
         <div className="relative z-10 w-full max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
@@ -219,7 +225,7 @@ export default function LandingPage() {
           {/* Right Image Block (No floating/pulsing or glowing blobs) */}
           <div className="relative w-full h-[400px] md:h-[550px] flex justify-center md:justify-end items-center pointer-events-none mt-16 md:mt-0 md:w-[45%]">
             <div className="relative z-20">
-              <img src="/assets/vending_machine.png" alt="Vending Machine" className="h-72 md:h-[450px] lg:h-[550px] object-contain object-center md:object-right drop-shadow-2xl" />
+              <img src="/assets/vending_machine.png" alt="Vending Machine" className="h-[380px] md:h-[450px] lg:h-[550px] object-contain object-center md:object-right drop-shadow-2xl" />
             </div>
           </div>
         </div>
@@ -228,14 +234,30 @@ export default function LandingPage() {
       {/* Marquee Banner - Bold Green */}
       <div className="w-full bg-emerald-700 border-y-4 border-emerald-800 py-3 overflow-hidden flex relative z-10 shadow-inner">
         <div className="flex animate-marquee whitespace-nowrap">
-          {Array.from({length: 5}).map((_, i) => (
-            <div key={i} className="flex items-center gap-8 mx-8">
-              <span className="font-pixel text-xs md:text-sm text-green-100">+++ NEW REWARDS +++</span>
-              <span className="font-pixel text-xs md:text-sm text-white">VOUCHER KANTIN</span>
-              <span className="font-pixel text-xs md:text-sm text-white">MERCHANDISE EKSKLUSIF</span>
-              <span className="font-pixel text-xs md:text-sm text-white">POTONGAN UKT</span>
-            </div>
-          ))}
+          {notifications && notifications.length > 0 ? (
+            Array.from({length: 4}).map((_, i) => (
+              <div key={i} className="flex items-center gap-8 mx-8">
+                {notifications.slice(0, 10).map((n: any, idx: number) => (
+                  <span key={idx} className="font-pixel text-xs md:text-sm text-white flex items-center gap-2">
+                    {n.type === 'reward' ? (
+                      <span className="text-green-200">+++</span>
+                    ) : (
+                      <span className="text-amber-300">&gt;&gt;&gt;</span>
+                    )}
+                    {n.message.toUpperCase()}
+                  </span>
+                ))}
+              </div>
+            ))
+          ) : (
+            Array.from({length: 5}).map((_, i) => (
+              <div key={i} className="flex items-center gap-8 mx-8">
+                <span className="font-pixel text-xs md:text-sm text-green-100">+++ RVM QUEST +++</span>
+                <span className="font-pixel text-xs md:text-sm text-white">KAMPUS HIJAU</span>
+                <span className="font-pixel text-xs md:text-sm text-white">DAUR ULANG CERDAS</span>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -289,7 +311,7 @@ export default function LandingPage() {
                 </h3>
                 <ul className="space-y-6 font-pixel-body text-slate-700 dark:text-slate-200">
                   {MANFAAT_SYSTEM.map((m, idx) => (
-                    <li key={idx} className="flex items-start gap-4 bg-slate-50 dark:bg-[#0b1120] p-6 pixel-border border-slate-300 dark:border-slate-600 shadow-lg">
+                    <li key={idx} className="flex items-start gap-4 bg-slate-50 dark:bg-slate-900 p-6 pixel-border border-slate-300 dark:border-slate-600 shadow-lg">
                       <m.Icon className={`w-8 h-8 shrink-0 mt-0.5 ${m.iconColor} ${m.animClass}`} />
                       <div>
                         <strong className={`block font-pixel text-sm md:text-base mb-2 ${m.colorText}`}>{m.title}</strong>
@@ -305,13 +327,13 @@ export default function LandingPage() {
 
             {/* Right Side: Canvas */}
             <div className="lg:col-span-7 relative mt-4 lg:mt-0 order-1 lg:order-2">
-              <div className="relative pixel-border bg-slate-50 dark:bg-[#0b1120] p-2 md:p-3 shadow-xl border-slate-300 dark:border-slate-600">
+              <div className="relative pixel-border bg-slate-50 dark:bg-slate-900 p-2 md:p-3 shadow-xl border-slate-300 dark:border-slate-600">
                 <canvas 
                   ref={canvasRef}
                   className="w-full h-auto aspect-video rounded pixel-render bg-slate-900 border border-slate-200 dark:border-slate-700"
                 />
                 
-                <div className="absolute -top-4 -right-4 bg-slate-50 dark:bg-[#0b1120] text-slate-700 dark:text-slate-200 font-pixel text-[10px] md:text-xs px-3 py-2 rounded shadow-lg flex items-center gap-2 pixel-border border-slate-200 dark:border-slate-700">
+                <div className="absolute -top-4 -right-4 bg-slate-50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-pixel text-[10px] md:text-xs px-3 py-2 rounded shadow-lg flex items-center gap-2 pixel-border border-slate-200 dark:border-slate-700">
                   SCANNING
                 </div>
                 
@@ -342,7 +364,7 @@ export default function LandingPage() {
               untuk transparansi program keberlanjutan (Sustainability Program).
             </p>
           </div>
-          <div className="bg-slate-50 dark:bg-[#0b1120] p-8 pixel-border border-slate-300 dark:border-slate-600 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="bg-slate-50 dark:bg-slate-900 p-8 pixel-border border-slate-300 dark:border-slate-600 shadow-lg hover:shadow-xl transition-shadow">
             <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-base md:text-lg mb-6 border-b-2 border-slate-200 dark:border-slate-700 pb-4">
               SPESIFIKASI SISTEM
             </h3>
@@ -371,7 +393,7 @@ export default function LandingPage() {
       </section>
 
             {/* Top 3 Leaderboard Section */}
-      <section className="bg-slate-50 dark:bg-[#0b1120] border-b-4 border-slate-200 dark:border-slate-700 px-4 py-24 relative z-10">
+      <section className="bg-slate-50 dark:bg-slate-800 border-b-4 border-slate-200 dark:border-slate-700 px-4 py-24 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="font-pixel text-green-700 dark:text-green-500 text-3xl md:text-4xl mb-6 text-center">
@@ -384,39 +406,56 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8 items-end max-w-5xl mx-auto">
             {/* Rank 2 */}
-            <div className="bg-white dark:bg-slate-900 p-6 pixel-border border-slate-300 dark:border-slate-600 shadow-md text-center transform hover:-translate-y-2 transition-transform order-2 md:order-1">
-              <div className="w-16 h-16 mx-auto bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 border-4 border-slate-300 dark:border-slate-600">
-                <span className="font-pixel text-slate-500 dark:text-slate-400 text-xl">#2</span>
+            <div className="bg-white dark:bg-slate-900 p-6 pixel-border border-slate-300 dark:border-slate-600 shadow-md text-center transform hover:-translate-y-2 transition-transform order-2 md:order-1 relative mt-8 md:mt-0">
+              <div className="w-16 h-16 mx-auto bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 border-4 border-slate-300 dark:border-slate-600 relative">
+                {leaderboard[1]?.character ? (
+                  <img src={`/character/${leaderboard[1].character}`} alt="Avatar" className="w-full h-full object-contain p-2" />
+                ) : (
+                  <span className="font-pixel text-slate-500 dark:text-slate-400 text-xl">#2</span>
+                )}
+                <div className="absolute -top-3 -right-3 bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-white font-pixel text-xs px-2 py-1 rounded pixel-border">#2</div>
               </div>
               <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-sm md:text-base mb-2">{leaderboard[1] ? leaderboard[1].name : "Menunggu..."}</h3>
-              <p className="font-pixel-body text-slate-500 dark:text-slate-400 text-lg mb-6">{leaderboard[1] ? `Level ${leaderboard[1].level || Math.floor((leaderboard[1].points || 0)/500) + 1}` : "..."}</p>
-              <div className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-3 pixel-border border-slate-200 dark:border-slate-700 font-bold font-pixel-body text-xl md:text-2xl">
-                12,450 XP
+              <p className="font-pixel-body text-slate-500 dark:text-slate-400 text-sm md:text-base mb-6">{leaderboard[1] ? `Level ${leaderboard[1].level || Math.floor((leaderboard[1].points || 0)/500) + 1}` : "..."}</p>
+              <div className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 py-3 pixel-border border-slate-300 dark:border-slate-600 font-bold font-pixel-body text-lg md:text-xl">
+                {leaderboard[1] ? `${leaderboard[1].points.toLocaleString('en-US')} XP` : "12,450 XP"}
               </div>
             </div>
 
             {/* Rank 1 */}
             <div className="bg-white dark:bg-slate-900 p-8 pixel-border border-yellow-400 shadow-2xl text-center transform hover:-translate-y-2 transition-transform relative md:-mt-12 z-10 order-1 md:order-2">
-              
-              <div className="w-20 h-20 mx-auto bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mb-4 border-4 border-yellow-400 mt-2">
-                <span className="font-pixel text-yellow-600 text-3xl">#1</span>
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+                <Crown className="w-12 h-12 text-yellow-400 drop-shadow-md" />
+              </div>
+              <div className="w-20 h-20 mx-auto bg-yellow-50 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mb-4 border-4 border-yellow-400 mt-2 relative">
+                {leaderboard[0]?.character ? (
+                  <img src={`/character/${leaderboard[0].character}`} alt="Avatar" className="w-full h-full object-contain p-2" />
+                ) : (
+                  <span className="font-pixel text-yellow-600 text-3xl">#1</span>
+                )}
+                <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-yellow-900 font-pixel text-sm px-2 py-1 rounded pixel-border">#1</div>
               </div>
               <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-base md:text-lg mb-2">{leaderboard[0] ? leaderboard[0].name : "Menunggu..."}</h3>
               <p className="font-pixel-body text-slate-500 dark:text-slate-400 text-xl mb-6">{leaderboard[0] ? `Level ${leaderboard[0].level || Math.floor((leaderboard[0].points || 0)/500) + 1}` : "..."}</p>
               <div className="bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 py-4 pixel-border border-yellow-300 dark:border-yellow-700 font-bold font-pixel-body text-2xl md:text-3xl">
-                15,800 XP
+                {leaderboard[0] ? `${leaderboard[0].points.toLocaleString('en-US')} XP` : "15,800 XP"}
               </div>
             </div>
 
             {/* Rank 3 */}
-            <div className="bg-white dark:bg-slate-900 p-6 pixel-border border-slate-300 dark:border-slate-600 shadow-md text-center transform hover:-translate-y-2 transition-transform order-3 md:order-3">
-              <div className="w-16 h-16 mx-auto bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center mb-4 border-4 border-orange-300 dark:border-orange-700">
-                <span className="font-pixel text-orange-600 text-xl">#3</span>
+            <div className="bg-white dark:bg-slate-900 p-6 pixel-border border-slate-300 dark:border-slate-600 shadow-md text-center transform hover:-translate-y-2 transition-transform order-3 md:order-3 relative mt-8 md:mt-0">
+              <div className="w-16 h-16 mx-auto bg-amber-50 dark:bg-amber-900/20 rounded-full flex items-center justify-center mb-4 border-4 border-amber-600 dark:border-amber-700 relative">
+                {leaderboard[2]?.character ? (
+                  <img src={`/character/${leaderboard[2].character}`} alt="Avatar" className="w-full h-full object-contain p-2" />
+                ) : (
+                  <span className="font-pixel text-amber-700 dark:text-amber-500 text-xl">#3</span>
+                )}
+                <div className="absolute -top-3 -left-3 bg-amber-600 text-amber-100 font-pixel text-xs px-2 py-1 rounded pixel-border">#3</div>
               </div>
               <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-sm md:text-base mb-2">{leaderboard[2] ? leaderboard[2].name : "Menunggu..."}</h3>
-              <p className="font-pixel-body text-slate-500 dark:text-slate-400 text-lg mb-6">{leaderboard[2] ? `Level ${leaderboard[2].level || Math.floor((leaderboard[2].points || 0)/500) + 1}` : "..."}</p>
-              <div className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-3 pixel-border border-slate-200 dark:border-slate-700 font-bold font-pixel-body text-xl md:text-2xl">
-                10,200 XP
+              <p className="font-pixel-body text-slate-500 dark:text-slate-400 text-sm md:text-base mb-6">{leaderboard[2] ? `Level ${leaderboard[2].level || Math.floor((leaderboard[2].points || 0)/500) + 1}` : "..."}</p>
+              <div className="bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-500 py-3 pixel-border border-amber-300 dark:border-amber-700 font-bold font-pixel-body text-lg md:text-xl">
+                {leaderboard[2] ? `${leaderboard[2].points.toLocaleString('en-US')} XP` : "10,200 XP"}
               </div>
             </div>
           </div>
@@ -440,29 +479,60 @@ export default function LandingPage() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {machines.map((machine: any) => (
-                <div key={machine.id} className="p-6 pixel-border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0b1120] hover:border-green-400 hover:shadow-lg transition-all">
-                  <div className="flex justify-between items-start mb-6">
-                    <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-[10px] md:text-xs max-w-[65%] leading-relaxed">{machine.name}</h3>
-                    {machine.status === 'online' && machine.current_bottles < machine.max_capacity ? (
-                      <span className="flex items-center gap-2 text-[10px] font-pixel text-green-600 bg-green-100 px-2 py-1 rounded">
-                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> ONLINE
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2 text-[10px] font-pixel text-red-600 bg-red-100 px-2 py-1 rounded">
-                        <span className="w-2 h-2 bg-red-500 rounded-full"></span> PENUH
-                      </span>
-                    )}
-                  </div>
-                  <p className="font-pixel-body text-slate-500 dark:text-slate-400 text-sm md:text-base mb-4 line-clamp-1">{machine.location || 'Lokasi Belum Diatur'}</p>
-                  <div className="w-full bg-slate-200 h-6 pixel-border border-slate-300 dark:border-slate-600 relative overflow-hidden mb-2">
-                    <div 
-                      className={`h-full transition-all duration-1000 ${(machine.current_bottles / machine.max_capacity) > 0.9 ? 'bg-red-500' : 'bg-green-500'}`} 
-                      style={{ width: `${Math.min(100, (machine.current_bottles / machine.max_capacity) * 100)}%` }}
-                    ></div>
-                  </div>
-                  <div className="flex justify-between mt-2 font-pixel-body text-slate-700 dark:text-slate-200 font-bold text-sm md:text-base">
-                    <span>Terisi: {machine.current_bottles} / {machine.max_capacity}</span>
-                    <span>{Math.round((machine.current_bottles / machine.max_capacity) * 100)}%</span>
+                <div key={machine.id} className="group p-1 bg-slate-200 dark:bg-slate-800 pixel-border border-slate-300 dark:border-slate-700 hover:bg-green-500 dark:hover:bg-green-600 transition-colors">
+                  <div className="bg-white dark:bg-slate-900 p-5 h-full relative overflow-hidden">
+                    {/* Background watermark icon */}
+                    <div className="absolute -bottom-6 -right-6 opacity-[0.03] dark:opacity-5 group-hover:scale-110 transition-transform">
+                      <Cpu className="w-32 h-32" />
+                    </div>
+
+                    <div className="flex justify-between items-start mb-4 relative z-10">
+                      <div>
+                        <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-sm md:text-base flex items-center gap-2">
+                          <Monitor className="w-5 h-5 text-slate-400 dark:text-slate-500" /> {machine.name}
+                        </h3>
+                        <p className="font-pixel-body text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-2 flex items-center gap-1.5 line-clamp-1">
+                          <MapPin className="w-3.5 h-3.5" /> {machine.location || 'Lokasi Belum Diatur'}
+                        </p>
+                      </div>
+                      
+                      {machine.status === 'online' && machine.current_bottles < machine.max_capacity ? (
+                        <span className="flex items-center gap-2 text-[8px] md:text-[10px] font-pixel text-green-700 bg-green-100 border border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 px-2 py-1.5 shadow-sm">
+                          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_5px_#22c55e]"></span> ACTIVE
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-2 text-[8px] md:text-[10px] font-pixel text-red-700 bg-red-100 border border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800 px-2 py-1.5 shadow-sm">
+                          <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_5px_#ef4444]"></span> {machine.status === 'maintenance' ? 'MTNCE' : 'FULL'}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="bg-slate-50 dark:bg-slate-950 p-4 border border-slate-200 dark:border-slate-800 mt-6 relative z-10">
+                      <div className="flex justify-between font-pixel-body text-slate-700 dark:text-slate-300 text-xs md:text-sm mb-2">
+                        <span className="flex items-center gap-1.5"><Box className="w-3.5 h-3.5"/> Kapasitas Terisi</span>
+                        <span className="font-bold">{machine.current_bottles} / {machine.max_capacity}</span>
+                      </div>
+                      
+                      <div className="w-full bg-slate-200 dark:bg-slate-800 h-3 border border-slate-300 dark:border-slate-700 relative overflow-hidden">
+                        <div 
+                          className={`h-full transition-all duration-1000 ${
+                            (machine.current_bottles / machine.max_capacity) > 0.9 
+                              ? 'bg-red-500' 
+                              : (machine.current_bottles / machine.max_capacity) > 0.7 
+                                ? 'bg-amber-500' 
+                                : 'bg-green-500'
+                          }`} 
+                          style={{ width: `${Math.min(100, (machine.current_bottles / machine.max_capacity) * 100)}%` }}
+                        ></div>
+                        {/* Scanline overlay pattern on the progress bar */}
+                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9InRyYW5zcGFyZW50Ii8+PGxpbmUgeDE9IjAiIHkxPSIwIiB4Mj0iNCIgeTI9IjQiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjMpIiBzdHJva2Utd2lkdGg9IjEiLz48L3N2Zz4=')] opacity-50"></div>
+                      </div>
+                      <div className="text-right mt-1.5">
+                        <span className="font-pixel text-[10px] text-slate-500 dark:text-slate-500 tracking-wider">
+                          {Math.round((machine.current_bottles / machine.max_capacity) * 100)}% FULL
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -477,7 +547,7 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="bg-slate-50 dark:bg-[#0b1120] border-b-4 border-slate-200 dark:border-slate-700 px-4 py-24 relative z-10">
+      <section className="bg-slate-50 dark:bg-slate-800 border-b-4 border-slate-200 dark:border-slate-700 px-4 py-24 relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="font-pixel text-slate-800 dark:text-slate-100 text-3xl md:text-4xl mb-6 text-center">PERTANYAAN UMUM (FAQ)</h2>
@@ -496,7 +566,7 @@ export default function LandingPage() {
               <div key={idx} className="bg-white dark:bg-slate-900 pixel-border border-slate-300 dark:border-slate-600 shadow-sm overflow-hidden transition-all">
                 <button 
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full text-left p-6 flex justify-between items-center hover:bg-slate-50 dark:bg-[#0b1120] transition-colors focus:outline-none"
+                  className="w-full text-left p-6 flex justify-between items-center hover:bg-slate-50 dark:bg-slate-900 transition-colors focus:outline-none"
                 >
                   <span className="font-pixel text-slate-800 dark:text-slate-100 text-sm md:text-base leading-relaxed pr-8">{faq.q}</span>
                   <ChevronDown className={`w-6 h-6 shrink-0 text-green-600 transition-transform duration-300 ${openFaq === idx ? 'rotate-180' : ''}`} />
@@ -513,17 +583,17 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA Banner */}
-      <section className="bg-slate-900 dark:bg-slate-950 px-4 py-24 relative z-10 border-t-4 border-slate-800 dark:border-slate-800">
+      <section className="bg-green-500 dark:bg-slate-900 px-4 py-24 relative z-10 border-t-4 border-green-600 dark:border-slate-700">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-pixel text-white text-3xl md:text-5xl leading-tight mb-6">
+          <h2 className="font-pixel text-slate-900 dark:text-slate-50 text-3xl md:text-5xl leading-tight mb-6">
             Siap Menjadi Pahlawan Lingkungan?
           </h2>
-          <p className="font-pixel-body text-slate-300 text-lg md:text-xl leading-relaxed mb-10 max-w-2xl mx-auto">
+          <p className="font-pixel-body text-slate-800 dark:text-slate-300 text-lg md:text-xl leading-relaxed mb-10 max-w-2xl mx-auto">
             Mulai kumpulkan botol pertama Anda hari ini. Bersama, kita wujudkan kampus bersih, inovatif, dan dapatkan berbagai reward eksklusif!
           </p>
           <Link
             to="/register"
-            className="inline-flex font-pixel border-4 border-white bg-green-500 text-slate-900 px-10 py-4 items-center gap-4 text-base md:text-lg transition-transform hover:-translate-y-1 hover:shadow-[6px_6px_0_0_rgba(255,255,255,1)] active:translate-y-0 active:shadow-none"
+            className="inline-flex font-pixel border-4 border-slate-900 dark:border-white bg-white dark:bg-green-600 text-slate-900 dark:text-white px-10 py-4 items-center gap-4 text-base md:text-lg transition-transform hover:-translate-y-1 hover:shadow-[6px_6px_0_0_rgba(15,23,42,1)] dark:hover:shadow-[6px_6px_0_0_rgba(255,255,255,1)] active:translate-y-0 active:shadow-none"
           >
             DAFTAR SEKARANG <ArrowRight className="w-6 h-6" />
           </Link>
@@ -531,27 +601,27 @@ export default function LandingPage() {
       </section>
 
       {/* Professional Footer */}
-      <footer className="bg-slate-900 text-slate-400 px-4 pt-16 pb-6 relative z-10 border-t-4 border-green-600">
+      <footer className="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 px-4 pt-16 pb-6 relative z-10 border-t-4 border-slate-200 dark:border-slate-900">
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-12 mb-12">
           <div>
             <div className="flex items-center gap-3 mb-6">
               <img src="/recycle.png" alt="Logo" className="w-8 h-8 pixel-render drop-shadow-sm grayscale opacity-70" />
-              <span className="font-pixel text-white text-sm tracking-wider">RVM<span className="text-green-500">QUEST</span></span>
+              <span className="font-pixel text-slate-900 dark:text-white text-sm tracking-wider">RVM<span className="text-green-500">QUEST</span></span>
             </div>
             <p className="font-pixel-body text-sm md:text-base leading-relaxed">
               Solusi gamifikasi pengelolaan limbah botol plastik berbasis IoT untuk lingkungan kampus yang lebih cerdas dan hijau.
             </p>
           </div>
           <div>
-            <h4 className="font-pixel text-white text-xs md:text-sm mb-6">TAUTAN RESMI</h4>
+            <h4 className="font-pixel text-slate-900 dark:text-white text-xs md:text-sm mb-6">TAUTAN RESMI</h4>
             <ul className="space-y-4 font-pixel-body text-sm md:text-base">
-              <li><Link to="/login" className="hover:text-green-400 transition-colors flex items-center gap-2">Portal Login Mahasiswa</Link></li>
-              <li><Link to="/register" className="hover:text-green-400 transition-colors flex items-center gap-2">Registrasi Akun Baru</Link></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors flex items-center gap-2">Dokumentasi API Server</a></li>
+              <li><Link to="/login" className="hover:text-green-600 dark:hover:text-green-400 transition-colors flex items-center gap-2">Portal Login Mahasiswa</Link></li>
+              <li><Link to="/register" className="hover:text-green-600 dark:hover:text-green-400 transition-colors flex items-center gap-2">Registrasi Akun Baru</Link></li>
+              <li><a href="#" className="hover:text-green-600 dark:hover:text-green-400 transition-colors flex items-center gap-2">Dokumentasi API Server</a></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-pixel text-white text-xs md:text-sm mb-6">HUBUNGI KAMI</h4>
+            <h4 className="font-pixel text-slate-900 dark:text-white text-xs md:text-sm mb-6">HUBUNGI KAMI</h4>
             <ul className="space-y-4 font-pixel-body text-sm md:text-base">
               <li className="flex items-start gap-3">
                 <Star className="w-5 h-5 mt-1 text-slate-500 dark:text-slate-400" />
@@ -564,7 +634,7 @@ export default function LandingPage() {
             </ul>
           </div>
         </div>
-        <div className="text-center pt-8 border-t border-slate-800 font-pixel text-[10px] md:text-xs text-slate-500 dark:text-slate-400 tracking-wider">
+        <div className="text-center pt-8 border-t border-slate-200 dark:border-slate-800 font-pixel text-[10px] md:text-xs text-slate-500 dark:text-slate-400 tracking-wider">
           &copy; 2026 RVM QUEST PRODUCTION TEAM. ALL RIGHTS RESERVED.
         </div>
       </footer>
