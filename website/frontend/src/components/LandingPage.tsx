@@ -9,7 +9,7 @@ import api from '../lib/api';
 // ==========================================
 const PANDUAN_STEPS = [
   { num: '1', title: 'LOGIN', desc: 'Gunakan panel layar sentuh di mesin untuk login ke akun RVM Quest.' },
-  { num: '2', title: 'MASUKKAN BOTOL', desc: 'Masukkan botol PET kosong. AI akan menimbang dan memvalidasi material secara presisi.' },
+  { num: '2', title: 'MASUKKAN BOTOL', desc: 'Masukkan botol PET kosong. Sensor akan menimbang dan memvalidasi material secara presisi.' },
   { num: '3', title: 'PROSES CACAH', desc: 'Botol akan dihancurkan menjadi flake plastik di dalam mesin.' },
   { num: '4', title: 'KLAIM REWARD', desc: 'XP otomatis masuk ke dashboard. Tukarkan dengan voucher menarik!' }
 ];
@@ -276,7 +276,7 @@ export default function LandingPage() {
                   BAGAIMANA CARA KERJANYA?
                 </h2>
                 <p className="font-pixel-body text-slate-600 dark:text-slate-300 text-lg md:text-xl leading-relaxed">
-                  Mesin Reverse Vending Machine (RVM) kami terintegrasi dengan sensor AI cerdas. Mengubah botol bekas menjadi material riset kini semudah bermain game. 
+                  Mesin Reverse Vending Machine (RVM) kami terintegrasi dengan sensor cerdas. Mengubah botol bekas menjadi material riset kini semudah bermain game. 
                   <span className="block mt-4 text-green-600 animate-pulse font-bold">SCROLL KE BAWAH UNTUK MELIHAT SIMULASI &gt;&gt;</span>
                 </p>
               </div>
@@ -352,7 +352,7 @@ export default function LandingPage() {
       <section className="bg-white dark:bg-slate-900 border-b-4 border-slate-200 dark:border-slate-700 px-4 pt-32 md:pt-24 pb-20 relative z-10 mt-16 md:mt-0">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="font-pixel text-green-700 dark:text-green-500 text-3xl md:text-4xl mb-6">INTEGRASI IoT & AI</h2>
+            <h2 className="font-pixel text-green-700 dark:text-green-500 text-3xl md:text-4xl mb-6">INTEGRASI SISTEM IoT</h2>
             <p className="font-pixel-body text-slate-600 dark:text-slate-300 text-lg md:text-xl leading-relaxed mb-6">
               RVM Quest bukan sekadar tempat sampah pintar. Ini adalah ekosistem 
               <span className="text-green-600 font-bold"> Internet of Things (IoT) </span> 
@@ -378,7 +378,7 @@ export default function LandingPage() {
                 <span className="font-bold text-slate-800 dark:text-slate-100">250 Botol PET</span>
               </li>
               <li className="flex justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
-                <span>Waktu Pemrosesan AI</span>
+                <span>Kecepatan Validasi</span>
                 <span className="font-bold text-slate-800 dark:text-slate-100">&lt; 2.5 Detik / Botol</span>
               </li>
               <li className="flex justify-between pb-2">
