@@ -7,12 +7,7 @@ import api from '../lib/api';
 // ==========================================
 // KONFIGURASI DINAMIS UNTUK PANDUAN & MANFAAT
 // ==========================================
-const PANDUAN_STEPS = [
-  { num: '1', title: 'LOGIN', desc: 'Gunakan panel layar sentuh di mesin untuk login ke akun RVM Quest.' },
-  { num: '2', title: 'MASUKKAN BOTOL', desc: 'Masukkan botol PET kosong. Sensor akan menimbang dan memvalidasi material secara presisi.' },
-  { num: '3', title: 'PROSES CACAH', desc: 'Botol akan dihancurkan menjadi flake plastik di dalam mesin.' },
-  { num: '4', title: 'KLAIM REWARD', desc: 'XP otomatis masuk ke dashboard. Tukarkan dengan voucher menarik!' }
-];
+
 
 const MANFAAT_SYSTEM = [
   { 
@@ -35,12 +30,20 @@ const MANFAAT_SYSTEM = [
 // ==========================================
 
 export default function LandingPage() {
-  const { settings, theme, toggleTheme, notifications } = useAppStore();
+  const { settings, theme, toggleTheme, notifications, faqs, guides } = useAppStore();
   const videoSectionRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [activeStep, setActiveStep] = useState(-1);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const frameCount = 240;
+  
+  const fallbackGuides = [
+    { step_number: 1, title: 'LOGIN', description: 'Gunakan panel layar sentuh di mesin untuk login ke akun RVM Quest.' },
+    { step_number: 2, title: 'MASUKKAN BOTOL', description: 'Masukkan botol PET kosong. Sensor akan menimbang dan memvalidasi material secara presisi.' },
+    { step_number: 3, title: 'PROSES CACAH', description: 'Botol akan dihancurkan menjadi flake plastik di dalam mesin.' },
+    { step_number: 4, title: 'KLAIM REWARD', description: 'XP otomatis masuk ke dashboard. Tukarkan dengan voucher menarik!' }
+  ];
+  const displayGuides = guides?.length > 0 ? [...guides].sort((a,b)=>a.step_number - b.step_number) : fallbackGuides;
 
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [machines, setMachines] = useState<any[]>([]);
@@ -120,7 +123,7 @@ export default function LandingPage() {
 
           let step = -1;
           if (progress > 0.1) {
-            const totalSteps = PANDUAN_STEPS.length + 1; 
+            const totalSteps = displayGuides.length + 1; 
             const progressPerStep = 0.9 / totalSteps;
             step = Math.floor((progress - 0.1) / progressPerStep);
             if (step >= totalSteps) step = totalSteps - 1;
@@ -281,12 +284,12 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className={`transition-all duration-700 ${activeStep >= 0 && activeStep < PANDUAN_STEPS.length ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10 absolute pointer-events-none'}`}>
+              <div className={`transition-all duration-700 ${activeStep >= 0 && activeStep < displayGuides.length ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10 absolute pointer-events-none'}`}>
                 <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-sm md:text-xl flex items-center gap-2 border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4 lg:mb-8">
                   <Activity className="w-4 h-4 text-green-600" /> PANDUAN PENGGUNAAN
                 </h3>
                 <div className="space-y-6">
-                  {PANDUAN_STEPS.map((s, index) => (
+                  {displayGuides.map((s:any, index:number) => (
                     <div 
                       key={index} 
                       className={`p-4 pixel-border gap-4 items-start transition-all duration-500 ${
@@ -295,17 +298,17 @@ export default function LandingPage() {
                           : 'hidden md:flex bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 opacity-50 scale-95'
                       }`}
                     >
-                      <span className={`font-pixel text-3xl md:text-4xl ${activeStep === index ? 'text-green-600' : 'text-slate-400'}`}>{s.num}</span>
+                      <span className={`font-pixel text-3xl md:text-4xl ${activeStep === index ? 'text-green-600' : 'text-slate-400'}`}>{s.step_number}</span>
                       <div>
                         <h4 className="font-pixel text-slate-800 dark:text-slate-100 text-sm md:text-base mb-2">{s.title}</h4>
-                        <p className="font-pixel-body text-slate-600 dark:text-slate-300 text-sm md:text-base">{s.desc}</p>
+                        <p className="font-pixel-body text-slate-600 dark:text-slate-300 text-sm md:text-base">{s.description}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className={`transition-all duration-700 ${activeStep === PANDUAN_STEPS.length ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 absolute pointer-events-none'}`}>
+              <div className={`transition-all duration-700 ${activeStep === displayGuides.length ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 absolute pointer-events-none'}`}>
                 <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-lg md:text-xl flex items-center gap-2 border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-8">
                   <Star className="w-4 h-4 text-amber-500" /> MANFAAT SYSTEM
                 </h3>
@@ -557,27 +560,22 @@ export default function LandingPage() {
           </div>
 
           <div className="space-y-4">
-            {[
-              { q: 'Apakah botol harus dicuci dulu sebelum dimasukkan?', a: 'Tidak wajib dicuci, namun pastikan botol dalam keadaan kosong (tidak ada sisa air/minuman manis) agar mesin tidak lengket dan mengundang semut.' },
-              { q: 'Botol jenis apa saja yang diterima oleh mesin?', a: 'Saat ini mesin hanya menerima botol plastik jenis PET (Polyethylene Terephthalate) transparan berukuran 330ml hingga 600ml. Kemasan gelas plastik atau kaleng akan ditolak otomatis oleh sensor.' },
-              { q: 'Berapa lama XP masuk ke akun setelah botol masuk?', a: 'Sistem RVM kami terhubung secara real-time via IoT. XP akan langsung ditambahkan ke akun Anda (kurang dari 3 detik) setelah botol selesai divalidasi dan dicacah.' },
-              { q: 'Bagaimana jika mesin menunjukkan status PENUH?', a: 'Jika indikator aplikasi menunjukkan warna merah (Penuh), mesin akan mengunci pintu masuk secara otomatis. Harap mencari lokasi mesin RVM lain yang masih berstatus Online di halaman status ini.' }
-            ].map((faq, idx) => (
-              <div key={idx} className="bg-white dark:bg-slate-900 pixel-border border-slate-300 dark:border-slate-600 shadow-sm overflow-hidden transition-all">
+            {faqs?.length > 0 ? faqs.sort((a,b)=>a.order_num - b.order_num).map((faq, idx) => (
+              <div key={faq.id} className="bg-white dark:bg-slate-900 pixel-border border-slate-300 dark:border-slate-600 shadow-sm overflow-hidden transition-all">
                 <button 
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
                   className="w-full text-left p-6 flex justify-between items-center hover:bg-slate-50 dark:bg-slate-900 transition-colors focus:outline-none"
                 >
-                  <span className="font-pixel text-slate-800 dark:text-slate-100 text-sm md:text-base leading-relaxed pr-8">{faq.q}</span>
+                  <span className="font-pixel text-slate-800 dark:text-slate-100 text-sm md:text-base leading-relaxed pr-8">{faq.question}</span>
                   <ChevronDown className={`w-6 h-6 shrink-0 text-green-600 transition-transform duration-300 ${openFaq === idx ? 'rotate-180' : ''}`} />
                 </button>
                 <div className={`px-6 overflow-hidden transition-all duration-300 ${openFaq === idx ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}>
                   <p className="font-pixel-body text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-4">
-                    {faq.a}
+                    {faq.answer}
                   </p>
                 </div>
               </div>
-            ))}
+            )) : <p className="text-slate-500 text-center font-pixel-body">FAQ belum tersedia.</p>}
           </div>
         </div>
       </section>

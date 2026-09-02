@@ -49,6 +49,14 @@ interface AppState {
   redemptions: any[]; // for admin to see pending redemptions
   allLogs: any[];
   notifications: any[];
+  faqs: any[];
+  guides: any[];
+  addFaq: (data:any) => void;
+  updateFaq: (id:string, data:any) => void;
+  deleteFaq: (id:string) => void;
+  addGuide: (data:any) => void;
+  updateGuide: (id:string, data:any) => void;
+  deleteGuide: (id:string) => void;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   settings: Record<string, string>;
@@ -90,6 +98,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [redemptions, setRedemptions] = useState<any[]>([]);
   const [allLogs, setAllLogs] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [faqs, setFaqs] = useState<any[]>([]);
+  const [guides, setGuides] = useState<any[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({ 'xp_per_bottle': '100' });
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -136,6 +146,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (notifRes?.data?.notifications) setNotifications(notifRes.data.notifications);
       
       const setRes = await api.get('/settings').catch(()=>null);
+      const faqRes = await api.get('/faqs').catch(()=>null);
+      if (faqRes?.data?.faqs) setFaqs(faqRes.data.faqs);
+      const guideRes = await api.get('/guides').catch(()=>null);
+      if (guideRes?.data?.guides) setGuides(guideRes.data.guides);
       if(setRes?.data?.settings) setSettings(setRes.data.settings);
     } catch(e) { console.error('Settings err:', e); }
 
@@ -375,11 +389,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+
+  const addFaq = async (data: any) => {
+    try { await api.post('/faqs', data); toast.success('FAQ ditambahkan'); refreshData(); } 
+    catch { toast.error('Gagal menambahkan FAQ'); }
+  };
+  const updateFaq = async (id: string, data: any) => {
+    try { await api.patch(`/faqs/${id}`, data); toast.success('FAQ diperbarui'); refreshData(); } 
+    catch { toast.error('Gagal memperbarui FAQ'); }
+  };
+  const deleteFaq = async (id: string) => {
+    try { await api.delete(`/faqs/${id}`); toast.success('FAQ dihapus'); refreshData(); } 
+    catch { toast.error('Gagal menghapus FAQ'); }
+  };
+  const addGuide = async (data: any) => {
+    try { await api.post('/guides', data); toast.success('Guide ditambahkan'); refreshData(); } 
+    catch { toast.error('Gagal menambahkan Guide'); }
+  };
+  const updateGuide = async (id: string, data: any) => {
+    try { await api.patch(`/guides/${id}`, data); toast.success('Guide diperbarui'); refreshData(); } 
+    catch { toast.error('Gagal memperbarui Guide'); }
+  };
+  const deleteGuide = async (id: string) => {
+    try { await api.delete(`/guides/${id}`); toast.success('Guide dihapus'); refreshData(); } 
+    catch { toast.error('Gagal menghapus Guide'); }
+  };
+
   return (
     <AppContext.Provider value={{ 
-      currentUser, users, students, machine, tickets, stats, rewards, redemptions, allLogs, notifications, machines,
+      currentUser, users, students, machine, tickets, stats, rewards, redemptions, allLogs, notifications, machines, faqs, guides,
       login, register, logout, adminAddBottles, setMachineMaxCapacity, 
-      acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward, refreshData, setActiveMachine, addMachine, deleteMachine, settings, updateSetting, theme, toggleTheme 
+      acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward, addFaq, updateFaq, deleteFaq, addGuide, updateGuide, deleteGuide, refreshData, setActiveMachine, addMachine, deleteMachine, settings, updateSetting, theme, toggleTheme 
     }}>
       {children}
     </AppContext.Provider>
