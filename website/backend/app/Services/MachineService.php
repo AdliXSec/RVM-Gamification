@@ -1,0 +1,90 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services;
+
+use App\Models\Machine;
+use App\Models\PickUpTicket;
+use App\Models\Transaction;
+use App\Models\User;
+use Illuminate\Support\Facades\Cache;
+use App\Models\Setting;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+
+class MachineService
+{
+    public function deposit(Machine $machine, int $userId, int $bottles): Transaction
+    {
+        return DB::transaction(function () use ($machine, $userId, $bottles) {
+            $lockedMachine = Machine::lockForUpdate()->findOrFail($machine->id);
+
+            if ($lockedMachine->isFull() || $lockedMachine->isUnderMaintenance()) {
+                throw new BadRequestHttpException('Mesin tidak tersedia.');
+            }
+
+            $actualBottles = min($bottles, $lockedMachine->max_capacity - $lockedMachine->current_bottles);
+
+            if ($actualBottles <= 0) {
+                throw new BadRequestHttpException('Mesin sudah penuh.');
+            }
+
+            $newBottles = $lockedMachine->current_bottles + $actualBottles;
+            $isFull = $newBottles >= $lockedMachine->max_capacity;
+
+            $lockedMachine->update([
+                'current_bottles' => $newBottles,
+                'status' => $isFull ? 'full' : 'online',
+            ]);
+
+            $xpPerBottle = (int) Cache::rememberForever('settings.all', function () {
+                return Setting::pluck('value', 'key')->toArray();
+            })['xp_per_bottle'] ?? 100;
+            $xp = $actualBottles * $xpPerBottle;
+
+            User::where('id', $userId)->increment('points', $xp);
+
+            $transaction = Transaction::create([
+                'user_id' => $userId,
+                'machine_id' => $machine->id,
+                'type' => 'earn',
+                'description' => "Setor {$actualBottles} Botol",
+                'amount' => $xp,
+                'bottles_count' => $actualBottles,
+                'status' => 'completed',
+            ]);
+
+            // Invalidate caches
+            Cache::forget('campus_stats');
+            Cache::forget('leaderboard');
+
+            // Auto-create ticket if >= 80%
+            $percentage = round(($newBottles / $lockedMachine->max_capacity) * 100);
+            if ($percentage >= 80) {
+                $existingActive = PickUpTicket::where('machine_id', $machine->id)->active()->exists();
+                if (!$existingActive) {
+                    PickUpTicket::create([
+                        'ticket_code' => PickUpTicket::generateCode(),
+                        'machine_id' => $machine->id,
+                        'capacity_at_issue' => $newBottles,
+                        'status' => 'pending',
+                    ]);
+                }
+            }
+
+            return $transaction;
+        });
+    }
+
+    public function updateCapacity(Machine $machine, int $maxCapacity): Machine
+    {
+        $machine->update(['max_capacity' => $maxCapacity]);
+
+        if ($machine->current_bottles >= $maxCapacity) {
+            $machine->update(['status' => 'full']);
+        }
+
+        return $machine->fresh();
+    }
+}
