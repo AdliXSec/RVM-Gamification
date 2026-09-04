@@ -3,7 +3,7 @@ import {
   LogOut, Star, Trophy, Droplets, Leaf, Activity, AlertCircle,
   ShoppingBag, Clock, BookOpen, Gift, Crown, Medal, Flame,
   Swords, Bell, Home, Zap, Lock, Check, Target, Volume2,
-  Music, SkipBack, SkipForward, Play, Pause
+  Music, SkipBack, SkipForward, Play, Pause, ArrowRight
 } from 'lucide-react';
 import { useAppStore } from '../store';
 
@@ -142,12 +142,12 @@ export default function Dashboard() {
               <Star className="w-12 h-12 text-yellow-400 fill-yellow-400 animate-[spin_3s_linear_infinite]" />
             </div>
             <h2 className="font-pixel text-4xl md:text-5xl text-yellow-400 mb-2 drop-shadow-md mt-4 animate-pulse">LEVEL UP!</h2>
-            <p className="font-pixel text-slate-300 text-sm md:text-base mb-6">
-              LVL {levelUpData.old} <span className="text-yellow-500 mx-2">→</span> <span className="text-green-400 text-xl md:text-3xl">LVL {levelUpData.new}</span>
-            </p>
-            <div className="flex justify-center mb-8 animate-bounce">
-              <Trophy className="w-24 h-24 md:w-32 md:h-32 text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.8)]" />
+            <div className="flex items-center justify-center gap-2 md:gap-4 mb-6">
+              <span className="font-pixel text-slate-300 text-sm md:text-base">LVL {levelUpData.old}</span>
+              <ArrowRight className="w-5 h-5 md:w-8 md:h-8 text-yellow-500 animate-pulse" />
+              <span className="font-pixel text-green-400 text-xl md:text-3xl">LVL {levelUpData.new}</span>
             </div>
+            <img src={`/character/${currentUser.character || 'ninja.png'}`} alt="avatar" className="w-24 h-24 md:w-32 md:h-32 mx-auto object-contain drop-shadow-xl animate-bounce mb-8" />
             <button 
               onClick={() => setShowLevelUp(false)}
               className="pixel-btn bg-yellow-600 hover:bg-yellow-500 text-yellow-100 px-8 py-3 font-pixel text-sm md:text-base w-full transition-all"
