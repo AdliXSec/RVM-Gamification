@@ -52,11 +52,12 @@ class ReceiptController extends Controller
             $user->increment('points', $receipt->xp_value);
 
             // Log transaction
+            $machineName = $receipt->machine->name ?? 'Mesin RVM';
             Transaction::create([
                 'user_id' => $user->id,
                 'machine_id' => $receipt->machine_id,
                 'type' => 'earn',
-                'description' => "Klaim Struk (RVM-{$receipt->machine_id})",
+                'description' => "{$receipt->bottles_count} botol masuk ke {$machineName}",
                 'amount' => $receipt->xp_value,
                 'bottles_count' => $receipt->bottles_count,
                 'status' => 'completed',

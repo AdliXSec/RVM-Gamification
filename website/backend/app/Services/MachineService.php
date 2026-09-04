@@ -49,7 +49,7 @@ class MachineService
                 'user_id' => $userId,
                 'machine_id' => $machine->id,
                 'type' => 'earn',
-                'description' => "Setor {$actualBottles} Botol",
+                'description' => "{$actualBottles} botol masuk ke {$machine->name}",
                 'amount' => $xp,
                 'bottles_count' => $actualBottles,
                 'status' => 'completed',
