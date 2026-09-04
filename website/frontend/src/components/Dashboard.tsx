@@ -1,10 +1,10 @@
-import { useAppStore } from '../store';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   LogOut, Star, Trophy, Droplets, Leaf, Activity, AlertCircle,
   ShoppingBag, Clock, BookOpen, Gift, Crown, Medal, Flame,
-  Swords, Bell, Home, Zap, Lock, Check, Target
+  Swords, Bell, Home, Zap, Lock, Check, Target, Volume2, VolumeX
 } from 'lucide-react';
+import { useAppStore } from '../store';
 
 // ─── Tier System ───────────────────────────────────────────────────────
 function getRewardTier(cost: number) {
@@ -17,6 +17,23 @@ function getRewardTier(cost: number) {
 export default function Dashboard() {
   const { currentUser, users, stats, machines, rewards, logout, redeemReward, settings, notifications, guides } = useAppStore();
   const [tab, setTab] = useState<'home' | 'rank' | 'shop' | 'log' | 'quest' | 'info'>('home');
+  
+  // Background Music State
+  const [isMuted, setIsMuted] = useState(true);
+  const [currentTrack, setCurrentTrack] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const tracks = ['/sound/bgm.mp3', '/sound/bgm2.mp3'];
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.2;
+      if (!isMuted) {
+        audioRef.current.play().catch(() => setIsMuted(true));
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isMuted, currentTrack]);
 
   if (!currentUser) return null;
 
@@ -97,12 +114,26 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Music Toggle */}
+          <button onClick={() => setIsMuted(!isMuted)} className={`transition-colors p-1 shrink-0 ${isMuted ? 'text-slate-600 hover:text-slate-400' : 'text-blue-400 hover:text-blue-300'}`}>
+            {isMuted ? <VolumeX className="w-4 h-4 md:w-5 md:h-5" /> : <Volume2 className="w-4 h-4 md:w-5 md:h-5" />}
+          </button>
+
           {/* Logout */}
           <button onClick={logout} className="text-slate-600 hover:text-red-400 transition-colors p-1 shrink-0">
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-4 h-4 md:w-5 md:h-5" />
           </button>
         </div>
       </header>
+      
+      {/* Background Audio */}
+      <audio 
+        ref={audioRef} 
+        src={tracks[currentTrack]} 
+        onEnded={() => setCurrentTrack((prev) => (prev + 1) % tracks.length)} 
+        autoPlay={!isMuted}
+        loop={false}
+      />
 
       {/* ═══ Main Content ═══ */}
       <main className="flex-1 w-full max-w-4xl mx-auto px-3 md:px-6 pt-20 pb-24 relative z-10">
