@@ -1,10 +1,22 @@
 import { useAppStore } from '../store';
-import { useState } from 'react';
-import { LogOut, Star, Trophy, Droplets, Leaf, Activity, Box, AlertCircle, ShoppingBag, Clock, BookOpen, Award, Gift, Crown, Medal, Flame, Swords, Bell } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import {
+  LogOut, Star, Trophy, Droplets, Leaf, Activity, AlertCircle,
+  ShoppingBag, Clock, BookOpen, Gift, Crown, Medal, Flame,
+  Swords, Bell, Home, Zap, Lock, Check, Target
+} from 'lucide-react';
+
+// ─── Tier System ───────────────────────────────────────────────────────
+function getRewardTier(cost: number) {
+  if (cost >= 5000) return { name: 'LEGENDARY', color: 'yellow', border: 'border-yellow-500', glow: 'shadow-[0_0_20px_rgba(234,179,8,0.3)]', text: 'text-yellow-400', bg: 'bg-yellow-950/20', badge: 'bg-yellow-500/20 text-yellow-400' };
+  if (cost >= 3000) return { name: 'EPIC', color: 'purple', border: 'border-purple-500', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.3)]', text: 'text-purple-400', bg: 'bg-purple-950/20', badge: 'bg-purple-500/20 text-purple-400' };
+  if (cost >= 1000) return { name: 'RARE', color: 'blue', border: 'border-blue-500', glow: 'shadow-[0_0_20px_rgba(59,130,246,0.25)]', text: 'text-blue-400', bg: 'bg-blue-950/20', badge: 'bg-blue-500/20 text-blue-400' };
+  return { name: 'COMMON', color: 'slate', border: 'border-slate-600', glow: '', text: 'text-slate-400', bg: 'bg-slate-800/40', badge: 'bg-slate-700/40 text-slate-400' };
+}
 
 export default function Dashboard() {
   const { currentUser, users, stats, machines, rewards, logout, redeemReward, settings, notifications, guides } = useAppStore();
-  const [tab, setTab] = useState<'home' | 'redeem' | 'history' | 'guide' | 'leaderboard' | 'notifications'>('home');
+  const [tab, setTab] = useState<'home' | 'rank' | 'shop' | 'log' | 'quest' | 'info'>('home');
 
   if (!currentUser) return null;
 
@@ -12,434 +24,544 @@ export default function Dashboard() {
   const level = Math.floor(points / 500) + 1;
   const xpInLevel = points % 500;
   const xpPercent = (xpInLevel / 500) * 100;
+  const xpPerBottle = Number(settings?.xp_per_bottle || 100);
+  const totalBottles = Math.floor(points / xpPerBottle);
+
+  // Daily quest data (static display based on existing data)
+  const todayStr = new Date().toLocaleDateString('id-ID');
+  const todayBottles = currentUser.history?.filter((h: any) => h.type === 'earn' && h.date?.includes(todayStr)).length || 0;
+  const dailyTarget = 5;
+
+  // Streak (simplified: count consecutive days with activity)
+  const streakDays = useMemo(() => {
+    if (!currentUser.history || currentUser.history.length === 0) return 0;
+    const earnDates = [...new Set(currentUser.history.filter((h: any) => h.type === 'earn').map((h: any) => h.date?.split(' ')[0]))];
+    let streak = 0;
+    const today = new Date();
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const ds = d.toLocaleDateString('id-ID').split(' ')[0];
+      if (earnDates.some((ed: any) => ed?.includes(ds))) streak++;
+      else if (i > 0) break;
+    }
+    return streak;
+  }, [currentUser.history]);
+
+  const navItems = [
+    { key: 'home', label: 'BASE', icon: <Home className="w-5 h-5" /> },
+    { key: 'rank', label: 'RANK', icon: <Crown className="w-5 h-5" /> },
+    { key: 'shop', label: 'SHOP', icon: <ShoppingBag className="w-5 h-5" /> },
+    { key: 'log', label: 'LOG', icon: <Clock className="w-5 h-5" /> },
+    { key: 'quest', label: 'QUEST', icon: <BookOpen className="w-5 h-5" /> },
+    { key: 'info', label: 'INFO', icon: <Bell className="w-5 h-5" /> },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-[hsl(220,15%,7%)] scanlines overflow-x-hidden relative">
-      {/* Background Layer */}
-      <div 
-        className="fixed inset-0 w-full h-full bg-slate-950/80 bg-[url('/bg.jpeg')] bg-cover md:bg-[length:100%_100%] bg-center bg-blend-multiply pointer-events-none z-0 opacity-40"
-      />
+      {/* Background */}
+      <div className="fixed inset-0 w-full h-full bg-slate-950/80 bg-[url('/bg.jpeg')] bg-cover md:bg-[length:100%_100%] bg-center bg-blend-multiply pointer-events-none z-0 opacity-40" />
 
-      <header className="bg-slate-900/60 border-b-4 border-slate-800 sticky top-0 z-20 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="font-pixel text-slate-300 text-[10px] flex items-center gap-2">
-            <img src="/recycle.png" alt="Logo" className="w-5 h-5 object-contain drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]" /> RVM<span className="text-green-500">QUEST</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="pixel-border-green bg-slate-800/80 backdrop-blur flex items-center pr-3">
-              <div className="w-8 h-8 bg-slate-900/80 flex items-center justify-center mr-2 border-r-2 border-slate-700/50">
-                <img src={`/character/${currentUser.character || 'ninja.png'}`} alt="avatar" className="w-6 h-6 object-contain" />
-              </div>
-              <Star className="w-3 h-3 text-yellow-500 mr-1" />
-              <span className="font-pixel text-[9px] text-slate-300">{currentUser.points} XP</span>
+      {/* ═══ HUD Header ═══ */}
+      <header className="bg-slate-900/80 border-b-2 border-green-900/40 fixed top-0 left-0 right-0 z-30 backdrop-blur-lg">
+        <div className="max-w-4xl mx-auto px-3 py-2 flex items-center gap-3">
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            <div className="w-10 h-10 bg-slate-800 border-2 border-green-700/60 flex items-center justify-center overflow-hidden">
+              <img src={`/character/${currentUser.character || 'ninja.png'}`} alt="avatar" className="w-8 h-8 object-contain" />
             </div>
-            <button onClick={logout} className="text-slate-500 hover:text-slate-300 transition-colors">
-              <LogOut className="w-4 h-4" />
-            </button>
+            <div className="absolute -bottom-1 -right-1 bg-yellow-600 text-[6px] font-pixel text-yellow-100 px-1 leading-relaxed">
+              {level}
+            </div>
           </div>
+
+          {/* Name + XP Bar */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-0.5">
+              <span className="font-pixel text-[9px] text-green-400 truncate">{currentUser.name}</span>
+              <span className="font-pixel text-[8px] text-yellow-500 flex items-center gap-1 shrink-0 ml-2">
+                <Star className="w-3 h-3" /> {points.toLocaleString()}
+              </span>
+            </div>
+            <div className="h-2 bg-slate-800 border border-slate-700/50 overflow-hidden">
+              <div
+                style={{ width: `${xpPercent}%` }}
+                className="h-full bg-gradient-to-r from-green-600 to-green-400 transition-all duration-700 relative"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-[shimmer_2s_infinite]" />
+              </div>
+            </div>
+            <div className="flex justify-between mt-0.5">
+              <span className="font-pixel text-[6px] text-slate-600">LVL {level}</span>
+              <span className="font-pixel text-[6px] text-slate-600">{xpInLevel}/500</span>
+            </div>
+          </div>
+
+          {/* Logout */}
+          <button onClick={logout} className="text-slate-600 hover:text-red-400 transition-colors p-1 shrink-0">
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </header>
 
-      <div className="bg-slate-900/40 border-b-2 border-slate-800 px-4 relative z-10 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto flex gap-1 overflow-x-auto">
-          {[
-            { key: 'home', label: 'HOME', icon: <Activity className="w-3 h-3" /> },
-            { key: 'leaderboard', label: 'RANK', icon: <Crown className="w-3 h-3" /> },
-            { key: 'redeem', label: 'TUKAR', icon: <ShoppingBag className="w-3 h-3" /> },
-            { key: 'history', label: 'LOG', icon: <Clock className="w-3 h-3" /> },
-            { key: 'guide', label: 'GUIDE', icon: <BookOpen className="w-3 h-3" /> },
-            { key: 'notifications', label: 'INFO', icon: <Bell className="w-3 h-3" /> },
-          ].map(t => (
-            <button key={t.key} onClick={() => setTab(t.key as typeof tab)}
-              className={`font-pixel text-[8px] md:text-[9px] px-4 py-4 border-b-4 transition-colors whitespace-nowrap flex items-center gap-2 ${
-                tab === t.key ? 'border-green-500 text-green-400 bg-slate-800/80' : 'border-transparent text-slate-500 hover:text-slate-400 hover:bg-slate-800/30'
-              }`}
-            >
-              {t.icon} {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* ═══ Main Content ═══ */}
+      <main className="flex-1 w-full max-w-4xl mx-auto px-3 md:px-6 pt-20 pb-24 relative z-10">
 
-      <main className="flex-1 max-w-6xl mx-auto w-full p-4 md:p-8 relative z-10">
-
+        {/* ═══ TAB: HOME / BASE CAMP ═══ */}
         {tab === 'home' && (
-          <div className="space-y-6">
-            {/* Gamified Character Status Card */}
-            <div className="relative pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 overflow-hidden">
-              {/* Background scenery decoration */}
-              <div className="absolute right-0 top-0 bottom-0 w-full md:w-1/2 opacity-10 pointer-events-none" 
-                   style={{ backgroundImage: `url('/tree2.png')`, backgroundSize: 'contain', backgroundPosition: 'right bottom', backgroundRepeat: 'no-repeat' }} />
-              
-              {/* Large Character Avatar */}
-              <div className="relative shrink-0">
-                <div className="absolute inset-0 bg-green-500 blur-2xl opacity-20 animate-pulse rounded-full" />
-                <img 
-                  src={`/character/${currentUser.character || 'ninja.png'}`} 
-                  alt="avatar" 
-                  className="w-32 h-32 md:w-48 md:h-48 object-contain relative z-10 drop-shadow-[0_0_15px_rgba(34,197,94,0.4)] pixel-float" 
-                />
-              </div>
+          <div className="space-y-4">
+            {/* Character Card */}
+            <div className="relative pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/30 p-5 overflow-hidden">
+              <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-10 pointer-events-none"
+                style={{ backgroundImage: `url('/tree2.png')`, backgroundSize: 'contain', backgroundPosition: 'right bottom', backgroundRepeat: 'no-repeat' }} />
 
-              {/* Status & Stats */}
-              <div className="flex-1 w-full text-center md:text-left z-10">
-                <div className="inline-block bg-[hsl(220,12%,16%)] px-3 py-1.5 mb-3 pixel-border border-b-4 border-slate-700">
-                  <span className="font-pixel text-[10px] text-yellow-500 flex items-center gap-2">
-                    <Trophy className="w-4 h-4" /> LEVEL {level}
-                  </span>
+              <div className="flex items-center gap-5 relative z-10">
+                {/* Character */}
+                <div className="relative shrink-0">
+                  <div className="absolute inset-0 bg-green-500 blur-2xl opacity-20 animate-pulse rounded-full" />
+                  <img
+                    src={`/character/${currentUser.character || 'ninja.png'}`}
+                    alt="avatar"
+                    className="w-28 h-28 md:w-36 md:h-36 object-contain relative z-10 drop-shadow-[0_0_15px_rgba(34,197,94,0.4)] pixel-float"
+                  />
                 </div>
-                <h1 className="font-pixel text-green-400 text-2xl md:text-3xl mb-1 drop-shadow-md">
-                  {currentUser.name}
-                </h1>
-                <p className="font-pixel-body text-slate-300 text-xl md:text-2xl mb-1 tracking-wider">#{currentUser.nim}</p>
-                <p className="font-pixel-body text-slate-500 text-lg md:text-xl mb-6">Eco Warrior / Smart Campus Recycler</p>
 
-                {/* XP Bar */}
-                <div className="space-y-2 bg-[hsl(220,14%,8%)] p-4 pixel-border">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-pixel text-[8px] text-slate-400 flex items-center gap-1">
-                      <Star className="w-3 h-3 text-yellow-500" /> NEXT LEVEL PROGRESS
-                    </span>
-                    <span className="font-pixel text-[8px] text-green-400">{xpInLevel} / 500 XP</span>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="inline-flex items-center gap-1.5 bg-yellow-950/40 border border-yellow-800/40 px-2 py-1 mb-2">
+                    <Trophy className="w-3 h-3 text-yellow-500" />
+                    <span className="font-pixel text-[8px] text-yellow-400">LEVEL {level}</span>
                   </div>
-                  <div className="pixel-progress h-6 w-full">
-                    <div style={{ width: `${xpPercent}%` }} className="h-full bg-gradient-to-r from-green-600 to-green-400 transition-all duration-1000 relative overflow-hidden">
-                      <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_infinite]" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { icon: <Star className="w-5 h-5 text-yellow-500" />, val: String(currentUser.points ?? 0), label: 'TOTAL XP' },
-                { icon: <Trophy className="w-5 h-5 text-yellow-500" />, val: `LVL ${level}`, label: 'LEVEL' },
-                { icon: <Droplets className="w-5 h-5 text-blue-400" />, val: (currentUser.points / Number(settings?.xp_per_bottle || 100)).toFixed(0), label: 'BOTOL' },
-                { icon: <Leaf className="w-5 h-5 text-green-500" />, val: `${((currentUser.points / Number(settings?.xp_per_bottle || 100)) * 0.04).toFixed(1)}`, label: 'KG CO2' },
-              ].map((s, i) => (
-                <div key={i} className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4 text-center pixel-card">
-                  <div className="flex justify-center mb-2">{s.icon}</div>
-                  <div className="font-pixel text-slate-200 text-sm">{s.val}</div>
-                  <div className="font-pixel text-[7px] text-slate-600 mt-1">{s.label}</div>
-                </div>
-              ))}
-            </div>
-
-                        <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-5">
-              <h3 className="font-pixel text-[9px] text-slate-400 mb-4 flex items-center gap-2"><Activity className="w-4 h-4 text-green-500" /> STATUS MESIN RVM</h3>
-              <div className="space-y-4">
-              {machines && machines.map((m: any) => (
-                <div key={m.id} className="mb-4">
-                  {m.status === 'online' && m.current_bottles < m.max_capacity ? (
-                    <div className="pixel-border-green bg-green-950/15 p-4 flex items-center gap-3">
-                      <Box className="w-5 h-5 text-green-500" />
-                      <div>
-                        <span className="font-pixel text-[9px] text-green-400">MESIN TERSEDIA</span>
-                        <p className="font-pixel-body text-slate-500 text-lg">{m.name} ({m.location}) — {m.current_bottles}/{m.max_capacity} Botol</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="pixel-border-red bg-red-950/15 p-4 flex items-center gap-3">
-                      <AlertCircle className="w-5 h-5 text-red-400" />
-                      <div>
-                        <span className="font-pixel text-[9px] text-red-400">SEDANG DIKOSONGKAN</span>
-                        <p className="font-pixel-body text-slate-500 text-lg">{m.name} ({m.location}) - Petugas sedang menuju lokasi.</p>
-                      </div>
+                  <h1 className="font-pixel text-green-400 text-lg md:text-2xl truncate">{currentUser.name}</h1>
+                  <p className="font-pixel-body text-slate-500 text-sm">#{currentUser.nim}</p>
+                  {streakDays > 0 && (
+                    <div className="flex items-center gap-1 mt-2">
+                      <Flame className="w-3.5 h-3.5 text-orange-500" />
+                      <span className="font-pixel text-[8px] text-orange-400">{streakDays} HARI STREAK!</span>
                     </div>
                   )}
-                  <div className="mt-2">
-                    <div className="flex justify-between mb-1">
-                      <span className="font-pixel text-[7px] text-slate-600">KAPASITAS</span>
-                      <span className="font-pixel text-[7px] text-slate-500">{Math.round((m.current_bottles / m.max_capacity) * 100)}%</span>
-                    </div>
-                    <div className="pixel-progress h-3">
-                      <div style={{ width: `${Math.min(100, (m.current_bottles / m.max_capacity) * 100)}%` }} className="h-full transition-all" />
-                    </div>
-                  </div>
                 </div>
-              ))}
               </div>
             </div>
 
-            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-5">
-              <h3 className="font-pixel text-[9px] text-slate-400 mb-4 flex items-center gap-2"><Leaf className="w-4 h-4 text-green-500" /> STATISTIK KAMPUS</h3>
-              <div className="grid grid-cols-3 gap-4 text-center">
+            {/* Stat Row */}
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { icon: <Star className="w-4 h-4 text-yellow-500" />, val: points.toLocaleString(), label: 'XP' },
+                { icon: <Trophy className="w-4 h-4 text-yellow-500" />, val: `${level}`, label: 'LEVEL' },
+                { icon: <Droplets className="w-4 h-4 text-blue-400" />, val: `${totalBottles}`, label: 'BOTOL' },
+                { icon: <Leaf className="w-4 h-4 text-green-500" />, val: `${(totalBottles * 0.04).toFixed(1)}`, label: 'KG CO2' },
+              ].map((s, i) => (
+                <div key={i} className="bg-slate-900/70 border border-slate-800/60 p-3 text-center backdrop-blur-sm">
+                  <div className="flex justify-center mb-1.5">{s.icon}</div>
+                  <div className="font-pixel text-slate-200 text-xs">{s.val}</div>
+                  <div className="font-pixel text-[6px] text-slate-600 mt-0.5">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Daily Quest */}
+            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-yellow-500/30 p-4">
+              <h3 className="font-pixel text-[10px] text-yellow-400 flex items-center gap-2 mb-3">
+                <Target className="w-4 h-4" /> DAILY QUEST
+              </h3>
+              <div className="space-y-2">
+                <div className={`flex items-center gap-3 p-3 border-l-2 ${todayBottles >= dailyTarget ? 'border-green-500 bg-green-950/20' : 'border-yellow-600/50 bg-slate-800/40'}`}>
+                  <div className={`w-6 h-6 flex items-center justify-center shrink-0 ${todayBottles >= dailyTarget ? 'bg-green-600 text-green-100' : 'bg-slate-700 text-slate-400'}`}>
+                    {todayBottles >= dailyTarget ? <Check className="w-3.5 h-3.5" /> : <Droplets className="w-3.5 h-3.5" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-pixel text-[8px] text-slate-300">Setor {dailyTarget} botol hari ini</p>
+                    <div className="h-1.5 bg-slate-700 mt-1.5 overflow-hidden">
+                      <div className={`h-full transition-all ${todayBottles >= dailyTarget ? 'bg-green-500' : 'bg-yellow-500'}`}
+                        style={{ width: `${Math.min(100, (todayBottles / dailyTarget) * 100)}%` }} />
+                    </div>
+                  </div>
+                  <span className="font-pixel text-[8px] text-slate-500 shrink-0">{todayBottles}/{dailyTarget}</span>
+                </div>
+
+                <div className={`flex items-center gap-3 p-3 border-l-2 ${streakDays >= 3 ? 'border-green-500 bg-green-950/20' : 'border-yellow-600/50 bg-slate-800/40'}`}>
+                  <div className={`w-6 h-6 flex items-center justify-center shrink-0 ${streakDays >= 3 ? 'bg-green-600 text-green-100' : 'bg-slate-700 text-slate-400'}`}>
+                    {streakDays >= 3 ? <Check className="w-3.5 h-3.5" /> : <Flame className="w-3.5 h-3.5" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-pixel text-[8px] text-slate-300">Login 3 hari berturut-turut</p>
+                    <p className="font-pixel text-[6px] text-slate-600 mt-0.5">Streak saat ini: {streakDays} hari</p>
+                  </div>
+                  <span className="font-pixel text-[8px] text-slate-500 shrink-0">{Math.min(streakDays, 3)}/3</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Machine Status */}
+            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-cyan-500/30 p-4">
+              <h3 className="font-pixel text-[10px] text-slate-400 flex items-center gap-2 mb-3">
+                <Activity className="w-4 h-4 text-green-500" /> STATUS MESIN RVM
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {machines?.map((m: any) => {
+                  const pct = Math.round((m.current_bottles / m.max_capacity) * 100);
+                  const isAvail = m.status === 'online' && m.current_bottles < m.max_capacity;
+                  return (
+                    <div key={m.id} className={`p-3 border-l-2 ${isAvail ? 'border-green-500 bg-green-950/10' : 'border-red-500 bg-red-950/10'} flex items-center gap-3`}>
+                      <div className={`w-2 h-2 rounded-full shrink-0 ${isAvail ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-pixel text-[8px] text-slate-300 truncate">{m.name}</p>
+                        <p className="font-pixel text-[6px] text-slate-600">{m.location}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className={`font-pixel text-[8px] ${pct >= 80 ? 'text-red-400' : 'text-green-400'}`}>{pct}%</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Campus Stats */}
+            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4">
+              <h3 className="font-pixel text-[10px] text-slate-400 flex items-center gap-2 mb-3">
+                <Leaf className="w-4 h-4 text-green-500" /> STATISTIK KAMPUS
+              </h3>
+              <div className="grid grid-cols-3 gap-2 text-center">
                 {[
-                  { val: stats.totalBottles.toLocaleString(), label: 'BOTOL' },
-                  { val: stats.totalCO2.toLocaleString(), label: 'KG CO2' },
-                  { val: stats.totalFilament.toLocaleString(), label: 'M FILAMEN' },
+                  { val: stats.totalBottles.toLocaleString(), label: 'BOTOL', icon: <Droplets className="w-3 h-3 text-blue-400" /> },
+                  { val: stats.totalCO2.toLocaleString(), label: 'KG CO2', icon: <Leaf className="w-3 h-3 text-green-400" /> },
+                  { val: stats.totalFilament.toLocaleString(), label: 'M FILAMEN', icon: <Zap className="w-3 h-3 text-yellow-400" /> },
                 ].map((s, i) => (
-                  <div key={i} className="bg-[hsl(220,10%,9%)] p-3">
+                  <div key={i} className="bg-slate-800/40 p-3 border border-slate-700/30">
+                    <div className="flex justify-center mb-1">{s.icon}</div>
                     <div className="font-pixel text-green-400 text-xs">{s.val}</div>
-                    <div className="font-pixel text-[6px] text-slate-600 mt-1">{s.label}</div>
+                    <div className="font-pixel text-[6px] text-slate-600 mt-0.5">{s.label}</div>
                   </div>
                 ))}
               </div>
-              <p className="font-pixel-body text-slate-600 text-base mt-3">Botol didaur ulang menjadi filamen 3D Printer di Lab Teknik Industri.</p>
             </div>
           </div>
         )}
 
-        {tab === 'redeem' && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <ShoppingBag className="w-6 h-6 text-green-500" />
-              <div>
-                <h2 className="font-pixel text-slate-200 text-sm">REWARD SHOP</h2>
-                <p className="font-pixel-body text-slate-500 text-lg">Tukarkan XP-mu dengan hadiah</p>
+        {/* ═══ TAB: SHOP ═══ */}
+        {tab === 'shop' && (
+          <div className="space-y-4">
+            {/* Shop Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <ShoppingBag className="w-5 h-5 text-green-500" />
+                <div>
+                  <h2 className="font-pixel text-slate-200 text-sm">REWARD SHOP</h2>
+                  <p className="font-pixel text-[7px] text-slate-600">Tukarkan XP dengan hadiah eksklusif</p>
+                </div>
+              </div>
+              <div className="bg-slate-800/60 border border-slate-700/40 px-3 py-1.5 flex items-center gap-1.5">
+                <Star className="w-3 h-3 text-yellow-500" />
+                <span className="font-pixel text-[9px] text-yellow-400">{points.toLocaleString()}</span>
               </div>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              {rewards.length === 0 ? (
-                <div className="col-span-3 pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-12 text-center">
-                  <ShoppingBag className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-                  <span className="font-pixel text-[9px] text-slate-600">SHOP KOSONG</span>
+
+            {/* Items */}
+            {rewards.length === 0 ? (
+              <div className="pixel-border bg-slate-900/70 p-12 text-center">
+                <ShoppingBag className="w-10 h-10 text-slate-700 mx-auto mb-3" />
+                <span className="font-pixel text-[9px] text-slate-600">SHOP KOSONG</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {rewards.map(item => {
+                  const tier = getRewardTier(item.cost);
+                  const canAfford = points >= item.cost;
+                  return (
+                    <div key={item.id}
+                      className={`relative pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 ${tier.border} ${tier.glow} p-4 flex flex-col justify-between transition-all hover:scale-[1.02] ${!canAfford ? 'opacity-60' : ''}`}>
+                      {/* Tier Badge */}
+                      <div className={`absolute top-2 right-2 font-pixel text-[6px] px-1.5 py-0.5 ${tier.badge}`}>
+                        {tier.name}
+                      </div>
+
+                      <div>
+                        <div className={`w-10 h-10 ${tier.bg} flex items-center justify-center mb-3 border ${tier.border}/30`}>
+                          <Gift className={`w-5 h-5 ${tier.text}`} />
+                        </div>
+                        <h3 className="font-pixel text-[9px] text-slate-200 mb-1 pr-12">{item.name}</h3>
+                        <p className="font-pixel-body text-slate-600 text-xs mb-3 line-clamp-2">{item.desc}</p>
+                      </div>
+
+                      <div>
+                        <div className={`font-pixel text-sm mb-2 flex items-center gap-1 ${tier.text}`}>
+                          <Star className="w-3 h-3" /> {item.cost.toLocaleString()} XP
+                        </div>
+                        <button
+                          className={`w-full py-2.5 font-pixel text-[8px] transition-all ${
+                            canAfford
+                              ? `pixel-btn bg-green-700 hover:bg-green-600 text-green-100`
+                              : 'bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700'
+                          }`}
+                          disabled={!canAfford}
+                          onClick={() => redeemReward(item.cost, item.id)}
+                        >
+                          {canAfford ? (
+                            <span className="flex items-center justify-center gap-1"><ShoppingBag className="w-3 h-3" /> TUKAR</span>
+                          ) : (
+                            <span className="flex items-center justify-center gap-1"><Lock className="w-3 h-3" /> LOCKED</span>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ TAB: LOG (Quest Log) ═══ */}
+        {tab === 'log' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-slate-400" />
+                <div>
+                  <h2 className="font-pixel text-slate-200 text-sm">QUEST LOG</h2>
+                  <p className="font-pixel text-[7px] text-slate-600">Riwayat aktivitasmu</p>
                 </div>
-              ) : (
-                rewards.map(item => (
-                  <div key={item.id} className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-5 pixel-card flex flex-col justify-between">
-                    <div>
-                      <ShoppingBag className="w-6 h-6 text-slate-500 mb-3" />
-                      <h3 className="font-pixel text-[9px] text-slate-300 mb-2">{item.name}</h3>
-                      <p className="font-pixel-body text-slate-600 text-base mb-4">{item.desc}</p>
-                    </div>
-                    <div>
-                      <div className="font-pixel text-yellow-500 text-sm mb-3 flex items-center gap-1"><Star className="w-3 h-3" /> {item.cost} XP</div>
-                      <button
-                        className="pixel-btn bg-green-700 hover:bg-green-600 text-green-100 w-full py-3"
-                        disabled={currentUser.points < item.cost}
-                        onClick={() => redeemReward(item.cost, item.id)}
-                        style={currentUser.points < item.cost ? { opacity: 0.3, pointerEvents: 'none' } : {}}
-                      >
-                        TUKAR
-                      </button>
-                    </div>
-                  </div>
-                ))
+              </div>
+              {streakDays > 0 && (
+                <div className="flex items-center gap-1.5 bg-orange-950/30 border border-orange-800/30 px-3 py-1.5">
+                  <Flame className="w-3.5 h-3.5 text-orange-500" />
+                  <span className="font-pixel text-[8px] text-orange-400">{streakDays} DAY STREAK</span>
+                </div>
               )}
             </div>
-          </div>
-        )}
 
-        {tab === 'history' && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <Clock className="w-6 h-6 text-slate-400" />
-              <div>
-                <h2 className="font-pixel text-slate-200 text-sm">ACTIVITY LOG</h2>
-                <p className="font-pixel-body text-slate-500 text-lg">Riwayat transaksi dan status penukaran</p>
-              </div>
-            </div>
-            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-5">
+            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4">
               {currentUser.history.length === 0 ? (
                 <div className="text-center py-12">
                   <Clock className="w-10 h-10 text-slate-700 mx-auto mb-3" />
                   <span className="font-pixel text-[9px] text-slate-600">BELUM ADA LOG</span>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {currentUser.history.map(tx => (
-                    <div key={tx.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-[hsl(220,10%,9%)] border-l-4"
-                      style={{ borderColor: tx.type === 'earn' ? 'hsl(142,50%,40%)' : tx.status === 'cancelled' ? 'hsl(0,50%,45%)' : tx.status === 'completed' ? 'hsl(200,60%,45%)' : 'hsl(40,70%,45%)' }}
-                    >
-                      <div className="flex items-center gap-3">
-                        {tx.type === 'earn' ? <Award className="w-4 h-4 text-green-500" /> : <Gift className="w-4 h-4 text-slate-400" />}
-                        <div>
-                          <p className="font-pixel-body text-slate-300 text-lg">{tx.desc}</p>
-                          <p className="font-pixel text-[7px] text-slate-600">{tx.date}</p>
+                <div className="space-y-2">
+                  {currentUser.history.map((tx: any) => {
+                    const isEarn = tx.type === 'earn';
+                    return (
+                      <div key={tx.id}
+                        className={`flex items-center gap-3 p-3 border-l-2 transition-colors hover:bg-slate-800/40 ${
+                          isEarn ? 'border-green-500' :
+                          tx.status === 'cancelled' ? 'border-red-500' :
+                          tx.status === 'completed' ? 'border-blue-500' : 'border-yellow-500'
+                        }`}>
+                        <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${isEarn ? 'bg-green-950/40' : 'bg-purple-950/40'}`}>
+                          {isEarn ? <Zap className="w-4 h-4 text-green-400" /> : <Gift className="w-4 h-4 text-purple-400" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-pixel-body text-slate-300 text-sm truncate">{tx.desc}</p>
+                          <p className="font-pixel text-[6px] text-slate-600">{tx.date}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className={`font-pixel text-[10px] ${isEarn ? 'text-green-400' : 'text-purple-400'}`}>
+                            {isEarn ? '+' : '-'}{tx.amount} XP
+                          </span>
+                          {tx.type === 'redeem' && tx.status && (
+                            <span className={`font-pixel text-[6px] block mt-0.5 ${
+                              tx.status === 'pending' ? 'text-yellow-500' :
+                              tx.status === 'completed' ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {tx.status === 'pending' ? 'PENDING' : tx.status === 'completed' ? 'DONE' : 'DITOLAK'}
+                            </span>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 self-end sm:self-auto">
-                        {tx.type === 'redeem' && tx.status && (
-                          <span className={`font-pixel text-[7px] px-2 py-1 ${
-                            tx.status === 'pending' ? 'bg-yellow-950/40 text-yellow-500' :
-                            tx.status === 'completed' ? 'bg-green-950/40 text-green-400' :
-                            'bg-red-950/40 text-red-400'
-                          }`}>
-                            {tx.status === 'pending' ? 'PENDING' : tx.status === 'completed' ? 'DONE' : 'DITOLAK'}
-                          </span>
-                        )}
-                        <span className={`font-pixel text-[10px] ${tx.type === 'earn' ? 'text-green-400' : 'text-slate-500'}`}>
-                          {tx.type === 'earn' ? '+' : '-'}{tx.amount}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {tab === 'guide' && (
-          <div className="space-y-6">
+        {/* ═══ TAB: QUEST (Tutorial) ═══ */}
+        {tab === 'quest' && (
+          <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <BookOpen className="w-6 h-6 text-blue-400" />
+              <BookOpen className="w-5 h-5 text-blue-400" />
               <div>
                 <h2 className="font-pixel text-slate-200 text-sm">QUEST GUIDE</h2>
-                <p className="font-pixel-body text-slate-500 text-lg">Cara menggunakan mesin RVM</p>
+                <p className="font-pixel text-[7px] text-slate-600">Panduan misi untuk Eco Warrior</p>
               </div>
             </div>
-            <div className="space-y-4">
-              {guides?.length > 0 ? guides.sort((a:any, b:any)=>a.step_number - b.step_number).map((g:any) => (
-                <div key={g.id} className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-5 flex gap-4 items-start pixel-card">
-                  <div className="pixel-border-green bg-green-950/20 w-10 h-10 flex items-center justify-center shrink-0">
-                    <span className="font-pixel text-green-400 text-xs">{g.step_number}</span>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Star className="w-5 h-5 text-yellow-500" />
-                      <h3 className="font-pixel text-[9px] text-slate-300">{g.title}</h3>
+
+            <div className="space-y-1">
+              {guides?.length > 0 ? guides.sort((a: any, b: any) => a.step_number - b.step_number).map((g: any, idx: number) => {
+                // Simple completion logic: step 1 always done if user exists, step 2 if user has any earn, etc.
+                const isComplete = g.step_number <= Math.min(totalBottles > 0 ? 4 : 1, g.step_number);
+                const isCurrent = !isComplete && (idx === 0 || (guides[idx - 1] && guides[idx - 1].step_number <= (totalBottles > 0 ? 4 : 1)));
+                const isLocked = !isComplete && !isCurrent;
+
+                return (
+                  <div key={g.id} className="relative">
+                    {/* Connector line */}
+                    {idx < guides.length - 1 && (
+                      <div className={`absolute left-[19px] top-[48px] w-0.5 h-4 z-0 ${isComplete ? 'bg-green-600' : 'bg-slate-700'}`} />
+                    )}
+
+                    <div className={`relative z-10 flex items-start gap-4 p-4 transition-all ${
+                      isComplete ? 'pixel-border bg-green-950/15 border-green-800/30' :
+                      isCurrent ? 'pixel-border bg-yellow-950/10 border-yellow-700/30 animate-pulse' :
+                      'pixel-border bg-slate-900/50 border-slate-700/30 opacity-50'
+                    }`}>
+                      {/* Step indicator */}
+                      <div className={`w-10 h-10 flex items-center justify-center shrink-0 border-2 ${
+                        isComplete ? 'bg-green-700 border-green-500 text-green-100' :
+                        isCurrent ? 'bg-yellow-800/50 border-yellow-600 text-yellow-400' :
+                        'bg-slate-800 border-slate-600 text-slate-500'
+                      }`}>
+                        {isComplete ? <Check className="w-5 h-5" /> :
+                         isLocked ? <Lock className="w-4 h-4" /> :
+                         <span className="font-pixel text-xs">{g.step_number}</span>}
+                      </div>
+
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className={`font-pixel text-[9px] ${isComplete ? 'text-green-400' : isCurrent ? 'text-yellow-400' : 'text-slate-500'}`}>
+                            {g.title}
+                          </h3>
+                          {isComplete && <span className="font-pixel text-[6px] bg-green-500/20 text-green-400 px-1.5 py-0.5">DONE</span>}
+                          {isCurrent && <span className="font-pixel text-[6px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5">ACTIVE</span>}
+                        </div>
+                        <p className={`font-pixel-body text-sm ${isLocked ? 'text-slate-600' : 'text-slate-400'}`}>{g.description}</p>
+                      </div>
                     </div>
-                    <p className="font-pixel-body text-slate-500 text-lg">{g.description}</p>
                   </div>
-                </div>
-              )) : <p className="text-slate-500 text-center font-pixel-body">Panduan sedang dimuat...</p>}
+                );
+              }) : <p className="text-slate-500 text-center font-pixel-body">Panduan sedang dimuat...</p>}
             </div>
           </div>
         )}
 
-        {/* ====== LEADERBOARD ====== */}
-        
-          {tab === 'notifications' && (
-            <div className="space-y-6">
-              <div className="bg-slate-900/60 p-4 border-2 border-slate-700/50 flex items-center justify-between">
-                <h3 className="font-pixel text-slate-100 text-lg flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-amber-500" /> NOTIFIKASI SISTEM
-                </h3>
-                <span className="font-pixel text-[10px] text-slate-400">INFO 12 JAM TERAKHIR</span>
-              </div>
-              
-              <div className="space-y-3">
-                {notifications && notifications.length > 0 ? (
-                  notifications.map((n: any) => (
-                    <div key={n.id} className="bg-slate-800/80 p-4 border-l-4 border-slate-700 pixel-border hover:border-amber-500/50 transition-colors flex items-start gap-4">
-                      <div className="mt-1">
-                        {n.type === 'reward' ? (
-                          <Gift className="w-5 h-5 text-green-400" />
-                        ) : (
-                          <Droplets className="w-5 h-5 text-blue-400" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-pixel-body text-slate-200 text-sm md:text-base mb-1">{n.message}</p>
-                        <p className="font-pixel text-[8px] text-slate-400">{new Date(n.timestamp).toLocaleString('id-ID')}</p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-10 bg-slate-900/60 pixel-border border-slate-700/50">
-                    <AlertCircle className="w-8 h-8 text-slate-600 mx-auto mb-3" />
-                    <p className="font-pixel text-slate-400 text-xs">Belum ada notifikasi baru dalam 12 jam terakhir.</p>
-                  </div>
-                )}
+        {/* ═══ TAB: NOTIFICATIONS ═══ */}
+        {tab === 'info' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Bell className="w-5 h-5 text-amber-500" />
+                <div>
+                  <h2 className="font-pixel text-slate-200 text-sm">NOTIFIKASI</h2>
+                  <p className="font-pixel text-[7px] text-slate-600">Info 12 jam terakhir</p>
+                </div>
               </div>
             </div>
-          )}
 
-          {tab === 'leaderboard' && (() => {
-          const ranked = [...users]
-            .filter(u => u.role === 'student')
-            .sort((a, b) => b.points - a.points);
+            {notifications && notifications.length > 0 ? (
+              <div className="space-y-2">
+                {notifications.map((n: any) => (
+                  <div key={n.id} className="pixel-border bg-slate-900/70 backdrop-blur-sm p-4 border-l-2 border-amber-600/50 flex items-start gap-3 hover:bg-slate-800/50 transition-colors">
+                    <div className="mt-0.5 shrink-0">
+                      {n.type === 'reward' ? <Gift className="w-4 h-4 text-green-400" /> : <Droplets className="w-4 h-4 text-blue-400" />}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-pixel-body text-slate-200 text-sm">{n.message}</p>
+                      <p className="font-pixel text-[7px] text-slate-600 mt-1">{new Date(n.timestamp).toLocaleString('id-ID')}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 pixel-border bg-slate-900/70">
+                <AlertCircle className="w-8 h-8 text-slate-600 mx-auto mb-3" />
+                <p className="font-pixel text-[9px] text-slate-600">Tidak ada notifikasi baru.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ TAB: LEADERBOARD ═══ */}
+        {tab === 'rank' && (() => {
+          const ranked = [...users].filter(u => u.role === 'student').sort((a, b) => b.points - a.points);
           const myRank = ranked.findIndex(u => u.id === currentUser.id) + 1;
           const getRankTitle = (r: number) => r === 1 ? 'CHAMPION' : r === 2 ? 'ELITE' : r === 3 ? 'VETERAN' : r <= 5 ? 'WARRIOR' : 'ROOKIE';
           const getRankColor = (r: number) => r === 1 ? 'text-yellow-400' : r === 2 ? 'text-slate-300' : r === 3 ? 'text-amber-600' : 'text-slate-500';
 
           return (
-            <div className="space-y-6">
-              {/* Header */}
+            <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Crown className="w-6 h-6 text-yellow-500" />
+                <Crown className="w-5 h-5 text-yellow-500" />
                 <div>
                   <h2 className="font-pixel text-slate-200 text-sm">LEADERBOARD</h2>
-                  <p className="font-pixel-body text-slate-500 text-lg">Peringkat recycler kampus berdasarkan XP</p>
+                  <p className="font-pixel text-[7px] text-slate-600">Peringkat Eco Warrior kampus</p>
                 </div>
               </div>
 
-              {/* Your Rank Card */}
-              <div className="pixel-border-green bg-green-950/15 p-5 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="pixel-border bg-[hsl(220,12%,14%)] w-12 h-12 flex items-center justify-center">
-                    <span className="font-pixel text-green-400 text-sm">#{myRank}</span>
+              {/* Your Rank */}
+              <div className="pixel-border bg-green-950/20 border-green-800/30 p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-800 border border-green-700/40 flex items-center justify-center">
+                    <span className="font-pixel text-green-400 text-xs">#{myRank}</span>
                   </div>
                   <div>
-                    <p className="font-pixel text-[9px] text-slate-400">PERINGKATMU</p>
-                    <p className="font-pixel text-[10px] text-green-400 mt-1">{getRankTitle(myRank)}</p>
+                    <p className="font-pixel text-[8px] text-slate-400">PERINGKATMU</p>
+                    <p className="font-pixel text-[9px] text-green-400 mt-0.5">{getRankTitle(myRank)}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-pixel text-yellow-500 text-sm flex items-center gap-1 justify-end"><Star className="w-3 h-3" /> {currentUser.points}</p>
-                  <p className="font-pixel text-[7px] text-slate-600 mt-1">LVL {Math.floor((currentUser.points ?? 0) / 500) + 1}</p>
+                  <p className="font-pixel text-yellow-500 text-xs flex items-center gap-1 justify-end"><Star className="w-3 h-3" /> {points.toLocaleString()}</p>
+                  <p className="font-pixel text-[6px] text-slate-600 mt-0.5">LVL {level}</p>
                 </div>
               </div>
 
               {/* Top 3 Podium */}
               {ranked.length >= 3 && (
-                <div className="grid grid-cols-3 gap-3 items-end mt-24">
-                  {/* 2nd Place */}
-                  <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4 text-center pixel-card relative mt-28">
-                    <div className="absolute -top-32 left-0 right-0 flex justify-center pointer-events-none">
-                      <img src={`/character/${ranked[1]?.character || 'ninja.png'}`} alt="2nd" className="w-40 h-40 object-contain drop-shadow-md pixel-float" style={{ animationDelay: '1s' }} />
+                <div className="grid grid-cols-3 gap-2 items-end mt-20">
+                  {/* 2nd */}
+                  <div className="pixel-border bg-slate-900/70 p-3 text-center relative mt-24">
+                    <div className="absolute -top-28 left-0 right-0 flex justify-center pointer-events-none">
+                      <img src={`/character/${ranked[1]?.character || 'ninja.png'}`} alt="2nd" className="w-32 h-32 object-contain drop-shadow-md pixel-float" style={{ animationDelay: '1s' }} />
                     </div>
-                    <div className="h-16 flex items-end justify-center mb-3">
-                      <div className="w-full bg-slate-800 border-t-4 border-slate-500" style={{ height: '48px' }}>
-                        <span className="font-pixel text-slate-400 text-lg block pt-2">#2</span>
+                    <div className="h-12 flex items-end justify-center mb-2">
+                      <div className="w-full bg-slate-800 border-t-3 border-slate-500" style={{ height: '40px' }}>
+                        <span className="font-pixel text-slate-400 text-base block pt-2">#2</span>
                       </div>
                     </div>
-                    <Medal className="w-5 h-5 text-slate-400 mx-auto mb-2" />
-                    <p className="font-pixel text-[8px] text-slate-300 truncate">{ranked[1]?.name}</p>
-                    <p className="font-pixel text-[7px] text-slate-500 mt-1">{ranked[1]?.points} XP</p>
-                    <p className="font-pixel text-[6px] text-slate-600 mt-1">ELITE</p>
+                    <Medal className="w-4 h-4 text-slate-400 mx-auto mb-1" />
+                    <p className="font-pixel text-[7px] text-slate-300 truncate">{ranked[1]?.name}</p>
+                    <p className="font-pixel text-[6px] text-slate-500 mt-0.5">{ranked[1]?.points?.toLocaleString()} XP</p>
                   </div>
 
-                  {/* 1st Place */}
-                  <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4 text-center pixel-card relative mt-28" style={{ boxShadow: '4px 0 0 0 hsl(45,70%,35%), -4px 0 0 0 hsl(45,70%,35%), 0 4px 0 0 hsl(45,70%,35%), 0 -4px 0 0 hsl(45,70%,35%)' }}>
-                    <div className="absolute -top-40 left-0 right-0 flex justify-center pointer-events-none">
-                      <img src={`/character/${ranked[0]?.character || 'ninja.png'}`} alt="1st" className="w-48 h-48 object-contain drop-shadow-xl pixel-float" />
+                  {/* 1st */}
+                  <div className="pixel-border bg-slate-900/70 p-3 text-center relative mt-24" style={{ boxShadow: '0 0 20px rgba(234,179,8,0.15)' }}>
+                    <div className="absolute -top-36 left-0 right-0 flex justify-center pointer-events-none">
+                      <img src={`/character/${ranked[0]?.character || 'ninja.png'}`} alt="1st" className="w-40 h-40 object-contain drop-shadow-xl pixel-float" />
                     </div>
-                    <div className="h-24 flex items-end justify-center mb-3">
-                      <div className="w-full bg-yellow-950/40 border-t-4 border-yellow-500" style={{ height: '72px' }}>
-                        <Crown className="w-6 h-6 text-yellow-500 mx-auto mt-2" />
-                        <span className="font-pixel text-yellow-400 text-lg block">#1</span>
+                    <div className="h-16 flex items-end justify-center mb-2">
+                      <div className="w-full bg-yellow-950/40 border-t-3 border-yellow-500" style={{ height: '56px' }}>
+                        <Crown className="w-5 h-5 text-yellow-500 mx-auto mt-1.5" />
+                        <span className="font-pixel text-yellow-400 text-base block">#1</span>
                       </div>
                     </div>
-                    <p className="font-pixel text-[9px] text-yellow-400 truncate">{ranked[0]?.name}</p>
-                    <p className="font-pixel text-[8px] text-yellow-500 mt-1">{ranked[0]?.points} XP</p>
-                    <p className="font-pixel text-[6px] text-yellow-600 mt-1">CHAMPION</p>
+                    <p className="font-pixel text-[8px] text-yellow-400 truncate">{ranked[0]?.name}</p>
+                    <p className="font-pixel text-[7px] text-yellow-500 mt-0.5">{ranked[0]?.points?.toLocaleString()} XP</p>
                   </div>
 
-                  {/* 3rd Place */}
-                  <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4 text-center pixel-card relative mt-28">
-                    <div className="absolute -top-24 left-0 right-0 flex justify-center pointer-events-none">
-                      <img src={`/character/${ranked[2]?.character || 'ninja.png'}`} alt="3rd" className="w-32 h-32 object-contain drop-shadow-md pixel-float" style={{ animationDelay: '2s' }} />
+                  {/* 3rd */}
+                  <div className="pixel-border bg-slate-900/70 p-3 text-center relative mt-24">
+                    <div className="absolute -top-20 left-0 right-0 flex justify-center pointer-events-none">
+                      <img src={`/character/${ranked[2]?.character || 'ninja.png'}`} alt="3rd" className="w-24 h-24 object-contain drop-shadow-md pixel-float" style={{ animationDelay: '2s' }} />
                     </div>
-                    <div className="h-12 flex items-end justify-center mb-3">
-                      <div className="w-full bg-amber-950/30 border-t-4 border-amber-700" style={{ height: '36px' }}>
-                        <span className="font-pixel text-amber-600 text-lg block pt-1">#3</span>
+                    <div className="h-10 flex items-end justify-center mb-2">
+                      <div className="w-full bg-amber-950/30 border-t-3 border-amber-700" style={{ height: '32px' }}>
+                        <span className="font-pixel text-amber-600 text-base block pt-1">#3</span>
                       </div>
                     </div>
-                    <Medal className="w-5 h-5 text-amber-600 mx-auto mb-2" />
-                    <p className="font-pixel text-[8px] text-amber-500 truncate">{ranked[2]?.name}</p>
-                    <p className="font-pixel text-[7px] text-slate-500 mt-1">{ranked[2]?.points} XP</p>
-                    <p className="font-pixel text-[6px] text-slate-600 mt-1">VETERAN</p>
+                    <Medal className="w-4 h-4 text-amber-600 mx-auto mb-1" />
+                    <p className="font-pixel text-[7px] text-amber-500 truncate">{ranked[2]?.name}</p>
+                    <p className="font-pixel text-[6px] text-slate-500 mt-0.5">{ranked[2]?.points?.toLocaleString()} XP</p>
                   </div>
                 </div>
               )}
 
-              {/* Full Ranking List */}
-              <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-5">
-                <div className="flex items-center justify-between mb-4">
+              {/* Full Rankings */}
+              <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4">
+                <div className="flex items-center justify-between mb-3">
                   <h3 className="font-pixel text-[9px] text-slate-400 flex items-center gap-2"><Swords className="w-4 h-4 text-slate-500" /> ALL RECYCLERS</h3>
                   <span className="font-pixel text-[7px] text-slate-600">{ranked.length} PLAYERS</span>
-                </div>
-
-                {/* Table Header */}
-                <div className="grid grid-cols-12 gap-2 px-3 py-2 border-b-2 border-[hsl(220,10%,16%)] mb-2">
-                  <span className="font-pixel text-[7px] text-slate-600 col-span-2">RANK</span>
-                  <span className="font-pixel text-[7px] text-slate-600 col-span-5">PLAYER</span>
-                  <span className="font-pixel text-[7px] text-slate-600 col-span-2 text-right">LVL</span>
-                  <span className="font-pixel text-[7px] text-slate-600 col-span-3 text-right">XP</span>
                 </div>
 
                 <div className="space-y-1">
@@ -447,52 +569,34 @@ export default function Dashboard() {
                     const rank = i + 1;
                     const isMe = user.id === currentUser.id;
                     const userLevel = Math.floor(user.points / 500) + 1;
-
                     return (
                       <div key={user.id}
-                        className={`grid grid-cols-12 gap-2 items-center px-3 py-3 transition-colors ${
-                          isMe
-                            ? 'bg-green-950/20 border-l-4 border-green-500'
-                            : rank <= 3
-                              ? 'bg-[hsl(220,10%,9%)] border-l-4 border-[hsl(220,10%,16%)]'
-                              : 'border-l-4 border-transparent hover:bg-[hsl(220,10%,9%)]'
-                        }`}
-                      >
-                        {/* Rank */}
-                        <div className="col-span-2 flex items-center gap-1">
-                          {rank === 1 && <Crown className="w-3 h-3 text-yellow-500" />}
-                          {rank === 2 && <Medal className="w-3 h-3 text-slate-400" />}
-                          {rank === 3 && <Medal className="w-3 h-3 text-amber-600" />}
-                          {rank > 3 && <span className="w-3" />}
-                          <span className={`font-pixel text-[9px] ${getRankColor(rank)}`}>#{rank}</span>
+                        className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${
+                          isMe ? 'bg-green-950/20 border-l-2 border-green-500' :
+                          rank <= 3 ? 'bg-slate-800/30 border-l-2 border-slate-700' :
+                          'border-l-2 border-transparent hover:bg-slate-800/20'
+                        }`}>
+                        <div className="w-6 flex items-center justify-center shrink-0">
+                          {rank === 1 && <Crown className="w-3.5 h-3.5 text-yellow-500" />}
+                          {rank === 2 && <Medal className="w-3.5 h-3.5 text-slate-400" />}
+                          {rank === 3 && <Medal className="w-3.5 h-3.5 text-amber-600" />}
+                          {rank > 3 && <span className="font-pixel text-[8px] text-slate-600">#{rank}</span>}
                         </div>
 
-                        {/* Name */}
-                        <div className="col-span-5 flex items-center gap-2 overflow-hidden">
-                          <div className={`w-8 h-8 flex items-center justify-center shrink-0 border border-[hsl(220,10%,20%)] ${
-                            rank === 1 ? 'bg-yellow-950/40' : rank === 2 ? 'bg-slate-800' : rank === 3 ? 'bg-amber-950/30' : 'bg-[hsl(220,10%,14%)]'
-                          }`}>
-                            <img src={`/character/${user.character || 'ninja.png'}`} alt="avatar" className="w-6 h-6 object-contain" />
-                          </div>
-                          <div className="overflow-hidden">
-                            <p className={`font-pixel text-[8px] truncate ${isMe ? 'text-green-400' : 'text-slate-300'}`}>
-                              {user.name} {isMe && '(YOU)'}
-                            </p>
-                            <p className="font-pixel text-[6px] text-slate-600">{getRankTitle(rank)}</p>
-                          </div>
+                        <div className="w-7 h-7 flex items-center justify-center shrink-0 bg-slate-800 border border-slate-700/50">
+                          <img src={`/character/${user.character || 'ninja.png'}`} alt="avatar" className="w-5 h-5 object-contain" />
                         </div>
 
-                        {/* Level */}
-                        <div className="col-span-2 text-right">
-                          <span className="font-pixel text-[8px] text-slate-400">{userLevel}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-pixel text-[8px] truncate ${isMe ? 'text-green-400' : 'text-slate-300'}`}>
+                            {user.name} {isMe && '(YOU)'}
+                          </p>
+                          <p className="font-pixel text-[6px] text-slate-600">{getRankTitle(rank)} • LVL {userLevel}</p>
                         </div>
 
-                        {/* XP with mini bar */}
-                        <div className="col-span-3 text-right">
-                          <span className={`font-pixel text-[9px] flex items-center gap-1 justify-end ${rank <= 3 ? getRankColor(rank) : 'text-slate-400'}`}>
-                            <Flame className="w-3 h-3" /> {user.points.toLocaleString()}
-                          </span>
-                        </div>
+                        <span className={`font-pixel text-[8px] flex items-center gap-1 shrink-0 ${getRankColor(rank)}`}>
+                          <Flame className="w-3 h-3" /> {user.points.toLocaleString()}
+                        </span>
                       </div>
                     );
                   })}
@@ -501,11 +605,31 @@ export default function Dashboard() {
             </div>
           );
         })()}
+
       </main>
 
-      <footer className="border-t-2 border-slate-800 bg-slate-900/40 px-4 py-3 text-center relative z-10 backdrop-blur-sm">
-        <p className="font-pixel text-[7px] text-slate-500">RVM QUEST v1.0 - TELKOM UNIVERSITY SURABAYA</p>
-      </footer>
+      {/* ═══ Bottom Navigation Bar ═══ */}
+      <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 border-t-2 border-green-900/40 backdrop-blur-lg">
+        <div className="max-w-4xl mx-auto flex">
+          {navItems.map(n => {
+            const isActive = tab === n.key;
+            return (
+              <button key={n.key} onClick={() => setTab(n.key as typeof tab)}
+                className={`flex-1 flex flex-col items-center justify-center py-2.5 transition-all relative ${
+                  isActive ? 'text-green-400' : 'text-slate-600 hover:text-slate-400'
+                }`}>
+                {isActive && <div className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-green-500" />}
+                <div className={`transition-transform ${isActive ? 'scale-110 -translate-y-0.5' : ''}`}>
+                  {n.icon}
+                </div>
+                <span className={`font-pixel text-[7px] mt-1 ${isActive ? 'text-green-400' : 'text-slate-600'}`}>
+                  {n.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }
