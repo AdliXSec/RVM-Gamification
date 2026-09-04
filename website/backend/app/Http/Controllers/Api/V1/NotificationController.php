@@ -19,7 +19,7 @@ class NotificationController extends Controller
         $rewards = Reward::where('created_at', '>=', $timeLimit)->get();
         
         $transactions = Transaction::with('user:id,name')
-                            ->where('type', 'earn')
+                            ->whereIn('type', ['earn', 'redeem'])
                             ->where('created_at', '>=', $timeLimit)
                             ->latest()
                             ->take(50)
@@ -40,12 +40,25 @@ class NotificationController extends Controller
             $name = $t->user ? $t->user->name : 'Seseorang';
             // Extract first name for brevity
             $shortName = explode(' ', trim($name))[0];
-            $notifs->push([
-                'id' => 'trx_'.$t->id,
-                'type' => 'deposit',
-                'message' => "{$shortName} mendaur ulang {$t->bottles_count} botol (+{$t->amount} XP)",
-                'timestamp' => $t->created_at
-            ]);
+            
+            if ($t->type === 'redeem') {
+                $notifs->push([
+                    'id' => 'trx_'.$t->id,
+                    'type' => 'redeem',
+                    'message' => "{$shortName} menukarkan hadiah (" . abs($t->amount) . " XP)",
+                    'timestamp' => $t->created_at
+                ]);
+            } else if ($t->type === 'earn') {
+                if ($t->bottles_count > 0) {
+                    $notifs->push([
+                        'id' => 'trx_'.$t->id,
+                        'type' => 'deposit',
+                        'message' => "{$shortName} mendaur ulang {$t->bottles_count} botol (+{$t->amount} XP)",
+                        'timestamp' => $t->created_at
+                    ]);
+                }
+                // Jika bottles_count == 0 (seperti refund dari admin), kita tidak perlu memunculkannya di feed publik
+            }
         }
 
         $notifs = $notifs->sortByDesc('timestamp')->values();
