@@ -26,6 +26,10 @@ export default function Dashboard() {
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   
+  // Level Up State
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [levelUpData, setLevelUpData] = useState({ old: 1, new: 1 });
+  
   const tracks = [
     { name: 'BGM 1', url: '/sound/bgm.mp3' },
     { name: 'BGM 2', url: '/sound/bgm2.mp3' }
@@ -52,6 +56,39 @@ export default function Dashboard() {
       }
     }
   }, [isMuted, currentTrack, volume]);
+
+  // Track Level Changes
+  useEffect(() => {
+    if (!currentUser) return;
+    const currentLvl = Math.floor((currentUser.points || 0) / 500) + 1;
+    const storageKey = `rvm_last_level_${currentUser.id}`;
+    const savedLvl = localStorage.getItem(storageKey);
+    
+    if (savedLvl) {
+      const parsedLvl = parseInt(savedLvl, 10);
+      if (currentLvl > parsedLvl) {
+        // Level Up Trigger!
+        setLevelUpData({ old: parsedLvl, new: currentLvl });
+        setShowLevelUp(true);
+        localStorage.setItem(storageKey, currentLvl.toString());
+      } else if (currentLvl < parsedLvl) {
+        // Edge case sync (e.g. points spent/reset)
+        localStorage.setItem(storageKey, currentLvl.toString());
+      }
+    } else {
+      // First time init
+      localStorage.setItem(storageKey, currentLvl.toString());
+    }
+  }, [currentUser?.points, currentUser?.id]);
+
+  // Play Level Up SFX
+  useEffect(() => {
+    if (showLevelUp && !isMuted) {
+      const sfx = new Audio('/sound/levelup.mp3');
+      sfx.volume = 0.9;
+      sfx.play().catch(e => console.log('SFX error:', e));
+    }
+  }, [showLevelUp, isMuted]);
 
   if (!currentUser) return null;
 
@@ -96,6 +133,28 @@ export default function Dashboard() {
     <div className="flex flex-col min-h-screen bg-[hsl(220,15%,7%)] scanlines overflow-x-hidden relative">
       {/* Background */}
       <div className="fixed inset-0 w-full h-full bg-slate-950/80 bg-[url('/bg.jpeg')] bg-cover md:bg-[length:100%_100%] bg-center bg-blend-multiply pointer-events-none z-0 opacity-40" />
+
+      {/* ═══ Level Up Overlay ═══ */}
+      {showLevelUp && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-md">
+          <div className="relative text-center p-8 border-4 border-yellow-500 bg-slate-900 shadow-[0_0_50px_rgba(234,179,8,0.4)] animate-[scale-in_0.5s_ease-out] mx-4 max-w-sm w-full">
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+              <Star className="w-12 h-12 text-yellow-400 fill-yellow-400 animate-[spin_3s_linear_infinite]" />
+            </div>
+            <h2 className="font-pixel text-4xl md:text-5xl text-yellow-400 mb-2 drop-shadow-md mt-4 animate-pulse">LEVEL UP!</h2>
+            <p className="font-pixel text-slate-300 text-sm md:text-base mb-6">
+              LVL {levelUpData.old} <span className="text-yellow-500 mx-2">→</span> <span className="text-green-400 text-xl md:text-3xl">LVL {levelUpData.new}</span>
+            </p>
+            <img src={`/character/${currentUser.character || 'ninja.png'}`} alt="avatar" className="w-24 h-24 md:w-32 md:h-32 mx-auto object-contain drop-shadow-xl animate-bounce mb-8" />
+            <button 
+              onClick={() => setShowLevelUp(false)}
+              className="pixel-btn bg-yellow-600 hover:bg-yellow-500 text-yellow-100 px-8 py-3 font-pixel text-sm md:text-base w-full transition-all"
+            >
+              LANJUTKAN
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ═══ HUD Header ═══ */}
       <header className="bg-slate-900/80 border-b-2 border-green-900/40 fixed top-0 left-0 right-0 z-30 backdrop-blur-lg">
