@@ -64,13 +64,13 @@ export default function Dashboard() {
 
       {/* ═══ HUD Header ═══ */}
       <header className="bg-slate-900/80 border-b-2 border-green-900/40 fixed top-0 left-0 right-0 z-30 backdrop-blur-lg">
-        <div className="max-w-4xl mx-auto px-3 py-2 flex items-center gap-3">
+        <div className="max-w-6xl mx-auto px-3 md:px-6 py-2 md:py-3 flex items-center gap-3 md:gap-4">
           {/* Avatar */}
           <div className="relative shrink-0">
-            <div className="w-10 h-10 bg-slate-800 border-2 border-green-700/60 flex items-center justify-center overflow-hidden">
-              <img src={`/character/${currentUser.character || 'ninja.png'}`} alt="avatar" className="w-8 h-8 object-contain" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-800 border-2 border-green-700/60 flex items-center justify-center overflow-hidden">
+              <img src={`/character/${currentUser.character || 'ninja.png'}`} alt="avatar" className="w-8 h-8 md:w-10 md:h-10 object-contain" />
             </div>
-            <div className="absolute -bottom-1 -right-1 bg-yellow-600 text-[6px] font-pixel text-yellow-100 px-1 leading-relaxed">
+            <div className="absolute -bottom-1 -right-1 bg-yellow-600 text-[6px] md:text-[8px] font-pixel text-yellow-100 px-1 md:px-1.5 md:py-0.5 leading-relaxed">
               {level}
             </div>
           </div>
@@ -78,12 +78,12 @@ export default function Dashboard() {
           {/* Name + XP Bar */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-0.5">
-              <span className="font-pixel text-[9px] text-green-400 truncate">{currentUser.name}</span>
-              <span className="font-pixel text-[8px] text-yellow-500 flex items-center gap-1 shrink-0 ml-2">
-                <Star className="w-3 h-3" /> {points.toLocaleString()}
+              <span className="font-pixel text-[9px] md:text-xs text-green-400 truncate">{currentUser.name}</span>
+              <span className="font-pixel text-[8px] md:text-[10px] text-yellow-500 flex items-center gap-1 shrink-0 ml-2">
+                <Star className="w-3 h-3 md:w-4 md:h-4" /> {points.toLocaleString()}
               </span>
             </div>
-            <div className="h-2 bg-slate-800 border border-slate-700/50 overflow-hidden">
+            <div className="h-2 md:h-3 bg-slate-800 border border-slate-700/50 overflow-hidden">
               <div
                 style={{ width: `${xpPercent}%` }}
                 className="h-full bg-gradient-to-r from-green-600 to-green-400 transition-all duration-700 relative"
@@ -91,9 +91,9 @@ export default function Dashboard() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-[shimmer_2s_infinite]" />
               </div>
             </div>
-            <div className="flex justify-between mt-0.5">
-              <span className="font-pixel text-[6px] text-slate-600">LVL {level}</span>
-              <span className="font-pixel text-[6px] text-slate-600">{xpInLevel}/500</span>
+            <div className="flex justify-between mt-0.5 md:mt-1">
+              <span className="font-pixel text-[6px] md:text-[8px] text-slate-600">LVL {level}</span>
+              <span className="font-pixel text-[6px] md:text-[8px] text-slate-600">{xpInLevel}/500</span>
             </div>
           </div>
 
@@ -105,7 +105,7 @@ export default function Dashboard() {
       </header>
 
       {/* ═══ Main Content ═══ */}
-      <main className="flex-1 w-full max-w-4xl mx-auto px-3 md:px-6 pt-20 pb-24 relative z-10">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-3 md:px-6 pt-20 pb-24 relative z-10">
 
         {/* ═══ TAB: HOME / BASE CAMP ═══ */}
         {tab === 'home' && (
@@ -115,29 +115,29 @@ export default function Dashboard() {
               <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-10 pointer-events-none"
                 style={{ backgroundImage: `url('/tree2.png')`, backgroundSize: 'contain', backgroundPosition: 'right bottom', backgroundRepeat: 'no-repeat' }} />
 
-              <div className="flex items-center gap-5 relative z-10">
+              <div className="flex items-center gap-5 md:gap-8 relative z-10">
                 {/* Character */}
                 <div className="relative shrink-0">
                   <div className="absolute inset-0 bg-green-500 blur-2xl opacity-20 animate-pulse rounded-full" />
                   <img
                     src={`/character/${currentUser.character || 'ninja.png'}`}
                     alt="avatar"
-                    className="w-28 h-28 md:w-36 md:h-36 object-contain relative z-10 drop-shadow-[0_0_15px_rgba(34,197,94,0.4)] pixel-float"
+                    className="w-28 h-28 md:w-48 md:h-48 object-contain relative z-10 drop-shadow-[0_0_15px_rgba(34,197,94,0.4)] pixel-float"
                   />
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="inline-flex items-center gap-1.5 bg-yellow-950/40 border border-yellow-800/40 px-2 py-1 mb-2">
-                    <Trophy className="w-3 h-3 text-yellow-500" />
-                    <span className="font-pixel text-[8px] text-yellow-400">LEVEL {level}</span>
+                  <div className="inline-flex items-center gap-1.5 bg-yellow-950/40 border border-yellow-800/40 px-2 py-1 md:px-3 md:py-1.5 mb-2 md:mb-4">
+                    <Trophy className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
+                    <span className="font-pixel text-[8px] md:text-[10px] text-yellow-400">LEVEL {level}</span>
                   </div>
-                  <h1 className="font-pixel text-green-400 text-lg md:text-2xl truncate">{currentUser.name}</h1>
-                  <p className="font-pixel-body text-slate-500 text-sm">#{currentUser.nim}</p>
+                  <h1 className="font-pixel text-green-400 text-lg md:text-3xl lg:text-4xl truncate mb-1 md:mb-2">{currentUser.name}</h1>
+                  <p className="font-pixel-body text-slate-500 text-sm md:text-lg lg:text-xl">#{currentUser.nim}</p>
                   {streakDays > 0 && (
-                    <div className="flex items-center gap-1 mt-2">
-                      <Flame className="w-3.5 h-3.5 text-orange-500" />
-                      <span className="font-pixel text-[8px] text-orange-400">{streakDays} HARI STREAK!</span>
+                    <div className="flex items-center gap-1 mt-2 md:mt-4">
+                      <Flame className="w-3.5 h-3.5 md:w-5 md:h-5 text-orange-500" />
+                      <span className="font-pixel text-[8px] md:text-xs text-orange-400">{streakDays} HARI STREAK!</span>
                     </div>
                   )}
                 </div>
@@ -145,17 +145,17 @@ export default function Dashboard() {
             </div>
 
             {/* Stat Row */}
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-2 md:gap-4">
               {[
-                { icon: <Star className="w-4 h-4 text-yellow-500" />, val: points.toLocaleString(), label: 'XP' },
-                { icon: <Trophy className="w-4 h-4 text-yellow-500" />, val: `${level}`, label: 'LEVEL' },
-                { icon: <Droplets className="w-4 h-4 text-blue-400" />, val: `${totalBottles}`, label: 'BOTOL' },
-                { icon: <Leaf className="w-4 h-4 text-green-500" />, val: `${(totalBottles * 0.04).toFixed(1)}`, label: 'KG CO2' },
+                { icon: <Star className="w-4 h-4 md:w-6 md:h-6 text-yellow-500" />, val: points.toLocaleString(), label: 'XP' },
+                { icon: <Trophy className="w-4 h-4 md:w-6 md:h-6 text-yellow-500" />, val: `${level}`, label: 'LEVEL' },
+                { icon: <Droplets className="w-4 h-4 md:w-6 md:h-6 text-blue-400" />, val: `${totalBottles}`, label: 'BOTOL' },
+                { icon: <Leaf className="w-4 h-4 md:w-6 md:h-6 text-green-500" />, val: `${(totalBottles * 0.04).toFixed(1)}`, label: 'KG CO2' },
               ].map((s, i) => (
-                <div key={i} className="bg-slate-900/70 border border-slate-800/60 p-3 text-center backdrop-blur-sm">
-                  <div className="flex justify-center mb-1.5">{s.icon}</div>
-                  <div className="font-pixel text-slate-200 text-xs">{s.val}</div>
-                  <div className="font-pixel text-[6px] text-slate-600 mt-0.5">{s.label}</div>
+                <div key={i} className="bg-slate-900/70 border border-slate-800/60 p-3 md:p-5 text-center backdrop-blur-sm">
+                  <div className="flex justify-center mb-1.5 md:mb-3">{s.icon}</div>
+                  <div className="font-pixel text-slate-200 text-xs md:text-lg">{s.val}</div>
+                  <div className="font-pixel text-[6px] md:text-[9px] text-slate-600 mt-0.5 md:mt-2">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -610,19 +610,19 @@ export default function Dashboard() {
 
       {/* ═══ Bottom Navigation Bar ═══ */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 border-t-2 border-green-900/40 backdrop-blur-lg">
-        <div className="max-w-4xl mx-auto flex">
+        <div className="max-w-6xl mx-auto flex">
           {navItems.map(n => {
             const isActive = tab === n.key;
             return (
               <button key={n.key} onClick={() => setTab(n.key as typeof tab)}
-                className={`flex-1 flex flex-col items-center justify-center py-2.5 transition-all relative ${
+                className={`flex-1 flex flex-col items-center justify-center py-2.5 md:py-4 transition-all relative ${
                   isActive ? 'text-green-400' : 'text-slate-600 hover:text-slate-400'
                 }`}>
-                {isActive && <div className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-green-500" />}
-                <div className={`transition-transform ${isActive ? 'scale-110 -translate-y-0.5' : ''}`}>
+                {isActive && <div className="absolute top-0 left-1/4 right-1/4 h-0.5 md:h-1 bg-green-500" />}
+                <div className={`transition-transform [&>svg]:md:w-7 [&>svg]:md:h-7 ${isActive ? 'scale-110 -translate-y-0.5 md:-translate-y-1' : ''}`}>
                   {n.icon}
                 </div>
-                <span className={`font-pixel text-[7px] mt-1 ${isActive ? 'text-green-400' : 'text-slate-600'}`}>
+                <span className={`font-pixel text-[7px] md:text-[9px] mt-1 md:mt-2 ${isActive ? 'text-green-400' : 'text-slate-600'}`}>
                   {n.label}
                 </span>
               </button>
