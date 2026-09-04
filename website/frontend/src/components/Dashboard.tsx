@@ -64,7 +64,7 @@ export default function Dashboard() {
 
       {/* ═══ HUD Header ═══ */}
       <header className="bg-slate-900/80 border-b-2 border-green-900/40 fixed top-0 left-0 right-0 z-30 backdrop-blur-lg">
-        <div className="max-w-6xl mx-auto px-3 md:px-6 py-2 md:py-3 flex items-center gap-3 md:gap-4">
+        <div className="max-w-4xl mx-auto px-3 md:px-6 py-2 md:py-3 flex items-center gap-3 md:gap-4">
           {/* Avatar */}
           <div className="relative shrink-0">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-800 border-2 border-green-700/60 flex items-center justify-center overflow-hidden">
@@ -105,7 +105,7 @@ export default function Dashboard() {
       </header>
 
       {/* ═══ Main Content ═══ */}
-      <main className="flex-1 w-full max-w-6xl mx-auto px-3 md:px-6 pt-20 pb-24 relative z-10">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-3 md:px-6 pt-20 pb-24 relative z-10">
 
         {/* ═══ TAB: HOME / BASE CAMP ═══ */}
         {tab === 'home' && (
@@ -132,8 +132,8 @@ export default function Dashboard() {
                     <Trophy className="w-3 h-3 md:w-4 md:h-4 text-yellow-500" />
                     <span className="font-pixel text-[8px] md:text-[10px] text-yellow-400">LEVEL {level}</span>
                   </div>
-                  <h1 className="font-pixel text-green-400 text-lg md:text-3xl lg:text-4xl truncate mb-1 md:mb-2">{currentUser.name}</h1>
-                  <p className="font-pixel-body text-slate-500 text-sm md:text-lg lg:text-xl">#{currentUser.nim}</p>
+                  <h1 className="font-pixel text-green-400 text-xl md:text-3xl lg:text-4xl truncate mb-1 md:mb-2">{currentUser.name}</h1>
+                  <p className="font-pixel-body text-slate-500 text-base md:text-lg lg:text-xl">#{currentUser.nim}</p>
                   {streakDays > 0 && (
                     <div className="flex items-center gap-1 mt-2 md:mt-4">
                       <Flame className="w-3.5 h-3.5 md:w-5 md:h-5 text-orange-500" />
@@ -154,63 +154,63 @@ export default function Dashboard() {
               ].map((s, i) => (
                 <div key={i} className="bg-slate-900/70 border border-slate-800/60 p-3 md:p-5 text-center backdrop-blur-sm">
                   <div className="flex justify-center mb-1.5 md:mb-3">{s.icon}</div>
-                  <div className="font-pixel text-slate-200 text-xs md:text-lg">{s.val}</div>
+                  <div className="font-pixel text-slate-200 text-sm md:text-lg">{s.val}</div>
                   <div className="font-pixel text-[6px] md:text-[9px] text-slate-600 mt-0.5 md:mt-2">{s.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Daily Quest */}
-            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-yellow-500/30 p-4">
-              <h3 className="font-pixel text-[10px] text-yellow-400 flex items-center gap-2 mb-3">
-                <Target className="w-4 h-4" /> DAILY QUEST
+            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-yellow-500/30 p-4 md:p-6">
+              <h3 className="font-pixel text-[10px] md:text-sm text-yellow-400 flex items-center gap-2 mb-3 md:mb-5">
+                <Target className="w-4 h-4 md:w-5 md:h-5" /> DAILY QUEST
               </h3>
-              <div className="space-y-2">
-                <div className={`flex items-center gap-3 p-3 border-l-2 ${todayBottles >= dailyTarget ? 'border-green-500 bg-green-950/20' : 'border-yellow-600/50 bg-slate-800/40'}`}>
-                  <div className={`w-6 h-6 flex items-center justify-center shrink-0 ${todayBottles >= dailyTarget ? 'bg-green-600 text-green-100' : 'bg-slate-700 text-slate-400'}`}>
-                    {todayBottles >= dailyTarget ? <Check className="w-3.5 h-3.5" /> : <Droplets className="w-3.5 h-3.5" />}
+              <div className="space-y-2 md:space-y-4">
+                <div className={`flex items-center gap-3 md:p-4 md:gap-5 p-3 md:p-4 border-l-2 ${todayBottles >= dailyTarget ? 'border-green-500 bg-green-950/20' : 'border-yellow-600/50 bg-slate-800/40'}`}>
+                  <div className={`w-6 h-6 md:w-10 md:h-10 flex items-center justify-center shrink-0 ${todayBottles >= dailyTarget ? 'bg-green-600 text-green-100' : 'bg-slate-700 text-slate-400'}`}>
+                    {todayBottles >= dailyTarget ? <Check className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <Droplets className="w-3.5 h-3.5 md:w-5 md:h-5" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-pixel text-[8px] text-slate-300">Setor {dailyTarget} botol hari ini</p>
-                    <div className="h-1.5 bg-slate-700 mt-1.5 overflow-hidden">
+                    <p className="font-pixel text-[8px] md:text-sm text-slate-300">Setor {dailyTarget} botol hari ini</p>
+                    <div className="h-1.5 md:h-2 bg-slate-700 mt-1.5 md:mt-2 overflow-hidden">
                       <div className={`h-full transition-all ${todayBottles >= dailyTarget ? 'bg-green-500' : 'bg-yellow-500'}`}
                         style={{ width: `${Math.min(100, (todayBottles / dailyTarget) * 100)}%` }} />
                     </div>
                   </div>
-                  <span className="font-pixel text-[8px] text-slate-500 shrink-0">{todayBottles}/{dailyTarget}</span>
+                  <span className="font-pixel text-[8px] md:text-sm text-slate-500 shrink-0">{todayBottles}/{dailyTarget}</span>
                 </div>
 
-                <div className={`flex items-center gap-3 p-3 border-l-2 ${streakDays >= 3 ? 'border-green-500 bg-green-950/20' : 'border-yellow-600/50 bg-slate-800/40'}`}>
-                  <div className={`w-6 h-6 flex items-center justify-center shrink-0 ${streakDays >= 3 ? 'bg-green-600 text-green-100' : 'bg-slate-700 text-slate-400'}`}>
-                    {streakDays >= 3 ? <Check className="w-3.5 h-3.5" /> : <Flame className="w-3.5 h-3.5" />}
+                <div className={`flex items-center gap-3 md:p-4 md:gap-5 p-3 md:p-4 border-l-2 ${streakDays >= 3 ? 'border-green-500 bg-green-950/20' : 'border-yellow-600/50 bg-slate-800/40'}`}>
+                  <div className={`w-6 h-6 md:w-10 md:h-10 flex items-center justify-center shrink-0 ${streakDays >= 3 ? 'bg-green-600 text-green-100' : 'bg-slate-700 text-slate-400'}`}>
+                    {streakDays >= 3 ? <Check className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <Flame className="w-3.5 h-3.5 md:w-5 md:h-5" />}
                   </div>
                   <div className="flex-1">
-                    <p className="font-pixel text-[8px] text-slate-300">Login 3 hari berturut-turut</p>
-                    <p className="font-pixel text-[6px] text-slate-600 mt-0.5">Streak saat ini: {streakDays} hari</p>
+                    <p className="font-pixel text-[8px] md:text-sm text-slate-300">Login 3 hari berturut-turut</p>
+                    <p className="font-pixel text-[6px] md:text-[10px] text-slate-600 mt-0.5 md:mt-2">Streak saat ini: {streakDays} hari</p>
                   </div>
-                  <span className="font-pixel text-[8px] text-slate-500 shrink-0">{Math.min(streakDays, 3)}/3</span>
+                  <span className="font-pixel text-[8px] md:text-sm text-slate-500 shrink-0">{Math.min(streakDays, 3)}/3</span>
                 </div>
               </div>
             </div>
 
             {/* Machine Status */}
-            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-cyan-500/30 p-4">
-              <h3 className="font-pixel text-[10px] text-slate-400 flex items-center gap-2 mb-3">
-                <Activity className="w-4 h-4 text-green-500" /> STATUS MESIN RVM
+            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-cyan-500/30 p-4 md:p-6">
+              <h3 className="font-pixel text-[10px] md:text-sm text-slate-400 flex items-center gap-2 md:gap-4 mb-3 md:mb-5">
+                <Activity className="w-4 h-4 md:w-5 md:h-5 text-green-500" /> STATUS MESIN RVM
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                 {machines?.map((m: any) => {
                   const pct = Math.round((m.current_bottles / m.max_capacity) * 100);
                   const isAvail = m.status === 'online' && m.current_bottles < m.max_capacity;
                   return (
-                    <div key={m.id} className={`p-3 border-l-2 ${isAvail ? 'border-green-500 bg-green-950/10' : 'border-red-500 bg-red-950/10'} flex items-center gap-3`}>
-                      <div className={`w-2 h-2 rounded-full shrink-0 ${isAvail ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                    <div key={m.id} className={`p-3 md:p-4 border-l-2 ${isAvail ? 'border-green-500 bg-green-950/10' : 'border-red-500 bg-red-950/10'} flex items-center gap-3 md:gap-4 md:p-4`}>
+                      <div className={`w-2 h-2 md:w-3 md:h-3 rounded-full shrink-0 ${isAvail ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                       <div className="flex-1 min-w-0">
-                        <p className="font-pixel text-[8px] text-slate-300 truncate">{m.name}</p>
-                        <p className="font-pixel text-[6px] text-slate-600">{m.location}</p>
+                        <p className="font-pixel text-[8px] md:text-sm text-slate-300 truncate">{m.name}</p>
+                        <p className="font-pixel text-[6px] md:text-[10px] text-slate-600 md:mt-1">{m.location}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className={`font-pixel text-[8px] ${pct >= 80 ? 'text-red-400' : 'text-green-400'}`}>{pct}%</span>
+                        <span className={`font-pixel text-[8px] md:text-sm ${pct >= 80 ? 'text-red-400' : 'text-green-400'}`}>{pct}%</span>
                       </div>
                     </div>
                   );
@@ -219,20 +219,20 @@ export default function Dashboard() {
             </div>
 
             {/* Campus Stats */}
-            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4">
-              <h3 className="font-pixel text-[10px] text-slate-400 flex items-center gap-2 mb-3">
-                <Leaf className="w-4 h-4 text-green-500" /> STATISTIK KAMPUS
+            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4 md:p-6">
+              <h3 className="font-pixel text-[10px] md:text-sm text-slate-400 flex items-center gap-2 md:gap-4 mb-3 md:mb-5">
+                <Leaf className="w-4 h-4 md:w-5 md:h-5 text-green-500" /> STATISTIK KAMPUS
               </h3>
-              <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="grid grid-cols-3 gap-2 md:gap-4 text-center">
                 {[
-                  { val: stats.totalBottles.toLocaleString(), label: 'BOTOL', icon: <Droplets className="w-3 h-3 text-blue-400" /> },
-                  { val: stats.totalCO2.toLocaleString(), label: 'KG CO2', icon: <Leaf className="w-3 h-3 text-green-400" /> },
-                  { val: stats.totalFilament.toLocaleString(), label: 'M FILAMEN', icon: <Zap className="w-3 h-3 text-yellow-400" /> },
+                  { val: stats.totalBottles.toLocaleString(), label: 'BOTOL', icon: <Droplets className="w-3 h-3 md:w-5 md:h-5 text-blue-400" /> },
+                  { val: stats.totalCO2.toLocaleString(), label: 'KG CO2', icon: <Leaf className="w-3 h-3 md:w-5 md:h-5 text-green-400" /> },
+                  { val: stats.totalFilament.toLocaleString(), label: 'M FILAMEN', icon: <Zap className="w-3 h-3 md:w-5 md:h-5 text-yellow-400" /> },
                 ].map((s, i) => (
-                  <div key={i} className="bg-slate-800/40 p-3 border border-slate-700/30">
-                    <div className="flex justify-center mb-1">{s.icon}</div>
-                    <div className="font-pixel text-green-400 text-xs">{s.val}</div>
-                    <div className="font-pixel text-[6px] text-slate-600 mt-0.5">{s.label}</div>
+                  <div key={i} className="bg-slate-800/40 p-3 md:p-5 border border-slate-700/30">
+                    <div className="flex justify-center mb-1 md:mb-2">{s.icon}</div>
+                    <div className="font-pixel text-green-400 text-sm md:text-xl">{s.val}</div>
+                    <div className="font-pixel text-[6px] md:text-[10px] text-slate-600 mt-0.5 md:mt-2">{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -242,55 +242,55 @@ export default function Dashboard() {
 
         {/* ═══ TAB: SHOP ═══ */}
         {tab === 'shop' && (
-          <div className="space-y-4">
+          <div className="space-y-4 md:space-y-6">
             {/* Shop Header */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <ShoppingBag className="w-5 h-5 text-green-500" />
+              <div className="flex items-center gap-3 md:gap-5">
+                <ShoppingBag className="w-5 h-5 md:w-8 md:h-8 text-green-500" />
                 <div>
-                  <h2 className="font-pixel text-slate-200 text-sm">REWARD SHOP</h2>
-                  <p className="font-pixel text-[7px] text-slate-600">Tukarkan XP dengan hadiah eksklusif</p>
+                  <h2 className="font-pixel text-slate-200 text-base md:text-xl">REWARD SHOP</h2>
+                  <p className="font-pixel text-[7px] md:text-[10px] text-slate-600 md:mt-1">Tukarkan XP dengan hadiah eksklusif</p>
                 </div>
               </div>
-              <div className="bg-slate-800/60 border border-slate-700/40 px-3 py-1.5 flex items-center gap-1.5">
-                <Star className="w-3 h-3 text-yellow-500" />
-                <span className="font-pixel text-[9px] text-yellow-400">{points.toLocaleString()}</span>
+              <div className="bg-slate-800/60 border border-slate-700/40 px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-1 md:gap-2.5 md:gap-2">
+                <Star className="w-3 h-3 md:w-5 md:h-5 text-yellow-500" />
+                <span className="font-pixel text-[9px] md:text-sm text-yellow-400">{points.toLocaleString()}</span>
               </div>
             </div>
 
             {/* Items */}
             {rewards.length === 0 ? (
-              <div className="pixel-border bg-slate-900/70 p-12 text-center">
-                <ShoppingBag className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-                <span className="font-pixel text-[9px] text-slate-600">SHOP KOSONG</span>
+              <div className="pixel-border bg-slate-900/70 p-12 md:p-20 text-center">
+                <ShoppingBag className="w-10 h-10 md:w-16 md:h-16 text-slate-700 mx-auto mb-3 md:mb-5" />
+                <span className="font-pixel text-[9px] md:text-sm text-slate-600">SHOP KOSONG</span>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 md:gap-5">
                 {rewards.map(item => {
                   const tier = getRewardTier(item.cost);
                   const canAfford = points >= item.cost;
                   return (
                     <div key={item.id}
-                      className={`relative pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 ${tier.border} ${tier.glow} p-4 flex flex-col justify-between transition-all hover:scale-[1.02] ${!canAfford ? 'opacity-60' : ''}`}>
+                      className={`relative pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 ${tier.border} ${tier.glow} p-4 md:p-6 flex flex-col justify-between transition-all hover:scale-[1.02] ${!canAfford ? 'opacity-60' : ''}`}>
                       {/* Tier Badge */}
-                      <div className={`absolute top-2 right-2 font-pixel text-[6px] px-1.5 py-0.5 ${tier.badge}`}>
+                      <div className={`absolute top-2 md:top-3 right-2 md:right-3 font-pixel text-[6px] md:text-[8px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 ${tier.badge}`}>
                         {tier.name}
                       </div>
 
                       <div>
-                        <div className={`w-10 h-10 ${tier.bg} flex items-center justify-center mb-3 border ${tier.border}/30`}>
-                          <Gift className={`w-5 h-5 ${tier.text}`} />
+                        <div className={`w-10 h-10 md:w-16 md:h-16 ${tier.bg} flex items-center justify-center mb-3 md:mb-5 border ${tier.border}/30`}>
+                          <Gift className={`w-5 h-5 md:w-8 md:h-8 ${tier.text}`} />
                         </div>
-                        <h3 className="font-pixel text-[9px] text-slate-200 mb-1 pr-12">{item.name}</h3>
-                        <p className="font-pixel-body text-slate-600 text-xs mb-3 line-clamp-2">{item.desc}</p>
+                        <h3 className="font-pixel text-[9px] md:text-sm text-slate-200 mb-1 md:mb-2 md:mb-4 pr-12">{item.name}</h3>
+                        <p className="font-pixel-body text-slate-600 text-sm md:text-base mb-3 md:mb-5 line-clamp-2">{item.desc}</p>
                       </div>
 
                       <div>
-                        <div className={`font-pixel text-sm mb-2 flex items-center gap-1 ${tier.text}`}>
-                          <Star className="w-3 h-3" /> {item.cost.toLocaleString()} XP
+                        <div className={`font-pixel text-base md:text-xl mb-2 md:mb-4 flex items-center gap-1 md:gap-2 ${tier.text}`}>
+                          <Star className="w-3 h-3 md:w-5 md:h-5" /> {item.cost.toLocaleString()} XP
                         </div>
                         <button
-                          className={`w-full py-2.5 font-pixel text-[8px] transition-all ${
+                          className={`w-full py-2.5 md:py-4 font-pixel text-[8px] md:text-xs transition-all ${
                             canAfford
                               ? `pixel-btn bg-green-700 hover:bg-green-600 text-green-100`
                               : 'bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700'
@@ -299,9 +299,9 @@ export default function Dashboard() {
                           onClick={() => redeemReward(item.cost, item.id)}
                         >
                           {canAfford ? (
-                            <span className="flex items-center justify-center gap-1"><ShoppingBag className="w-3 h-3" /> TUKAR</span>
+                            <span className="flex items-center justify-center gap-1 md:gap-2"><ShoppingBag className="w-3 h-3 md:w-5 md:h-5" /> TUKAR</span>
                           ) : (
-                            <span className="flex items-center justify-center gap-1"><Lock className="w-3 h-3" /> LOCKED</span>
+                            <span className="flex items-center justify-center gap-1 md:gap-2"><Lock className="w-3 h-3 md:w-5 md:h-5" /> LOCKED</span>
                           )}
                         </button>
                       </div>
@@ -315,53 +315,53 @@ export default function Dashboard() {
 
         {/* ═══ TAB: LOG (Quest Log) ═══ */}
         {tab === 'log' && (
-          <div className="space-y-4">
+          <div className="space-y-4 md:space-y-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Clock className="w-5 h-5 text-slate-400" />
+              <div className="flex items-center gap-3 md:gap-5">
+                <Clock className="w-5 h-5 md:w-8 md:h-8 text-slate-400" />
                 <div>
-                  <h2 className="font-pixel text-slate-200 text-sm">QUEST LOG</h2>
-                  <p className="font-pixel text-[7px] text-slate-600">Riwayat aktivitasmu</p>
+                  <h2 className="font-pixel text-slate-200 text-base md:text-lg md:text-xl">QUEST LOG</h2>
+                  <p className="font-pixel text-[7px] md:text-[10px] md:text-sm text-slate-600 md:mt-1">Riwayat aktivitasmu</p>
                 </div>
               </div>
               {streakDays > 0 && (
-                <div className="flex items-center gap-1.5 bg-orange-950/30 border border-orange-800/30 px-3 py-1.5">
-                  <Flame className="w-3.5 h-3.5 text-orange-500" />
-                  <span className="font-pixel text-[8px] text-orange-400">{streakDays} DAY STREAK</span>
+                <div className="flex items-center gap-1.5 md:gap-2 bg-orange-950/30 border border-orange-800/30 px-3 py-1.5 md:px-4 md:py-2">
+                  <Flame className="w-3.5 h-3.5 md:w-5 md:h-5 text-orange-500" />
+                  <span className="font-pixel text-[8px] md:text-sm md:text-lg text-orange-400">{streakDays} DAY STREAK</span>
                 </div>
               )}
             </div>
 
-            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4">
+            <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4 md:p-6">
               {currentUser.history.length === 0 ? (
-                <div className="text-center py-12">
-                  <Clock className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-                  <span className="font-pixel text-[9px] text-slate-600">BELUM ADA LOG</span>
+                <div className="text-center py-12 md:py-20">
+                  <Clock className="w-10 h-10 md:w-16 md:h-16 text-slate-700 mx-auto mb-3 md:mb-5" />
+                  <span className="font-pixel text-[9px] md:text-sm md:text-lg text-slate-600">BELUM ADA LOG</span>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-2 md:space-y-4">
                   {currentUser.history.map((tx: any) => {
                     const isEarn = tx.type === 'earn';
                     return (
                       <div key={tx.id}
-                        className={`flex items-center gap-3 p-3 border-l-2 transition-colors hover:bg-slate-800/40 ${
+                        className={`flex items-center gap-3 md:gap-5 p-3 md:p-4 border-l-2 md:border-l-4 transition-colors hover:bg-slate-800/40 ${
                           isEarn ? 'border-green-500' :
                           tx.status === 'cancelled' ? 'border-red-500' :
                           tx.status === 'completed' ? 'border-blue-500' : 'border-yellow-500'
                         }`}>
-                        <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${isEarn ? 'bg-green-950/40' : 'bg-purple-950/40'}`}>
-                          {isEarn ? <Zap className="w-4 h-4 text-green-400" /> : <Gift className="w-4 h-4 text-purple-400" />}
+                        <div className={`w-8 h-8 md:w-12 md:h-12 flex items-center justify-center shrink-0 ${isEarn ? 'bg-green-950/40' : 'bg-purple-950/40'}`}>
+                          {isEarn ? <Zap className="w-4 h-4 md:w-6 md:h-6 text-green-400" /> : <Gift className="w-4 h-4 md:w-6 md:h-6 text-purple-400" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-pixel-body text-slate-300 text-sm truncate">{tx.desc}</p>
-                          <p className="font-pixel text-[6px] text-slate-600">{tx.date}</p>
+                          <p className="font-pixel-body text-slate-300 text-base md:text-lg md:text-xl truncate">{tx.desc}</p>
+                          <p className="font-pixel text-[6px] md:text-[9px] text-slate-600 md:mt-1">{tx.date}</p>
                         </div>
                         <div className="text-right shrink-0">
-                          <span className={`font-pixel text-[10px] ${isEarn ? 'text-green-400' : 'text-purple-400'}`}>
+                          <span className={`font-pixel text-[10px] md:text-sm ${isEarn ? 'text-green-400' : 'text-purple-400'}`}>
                             {isEarn ? '+' : '-'}{tx.amount} XP
                           </span>
                           {tx.type === 'redeem' && tx.status && (
-                            <span className={`font-pixel text-[6px] block mt-0.5 ${
+                            <span className={`font-pixel text-[6px] md:text-[9px] block mt-0.5 md:mt-1 ${
                               tx.status === 'pending' ? 'text-yellow-500' :
                               tx.status === 'completed' ? 'text-green-400' : 'text-red-400'
                             }`}>
@@ -378,96 +378,72 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ═══ TAB: QUEST (Tutorial) ═══ */}
+        {/* ═══ TAB: GUIDE ═══ */}
         {tab === 'quest' && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <BookOpen className="w-5 h-5 text-blue-400" />
+          <div className="space-y-4 md:space-y-6">
+            <div className="flex items-center gap-3 md:gap-5">
+              <BookOpen className="w-5 h-5 md:w-8 md:h-8 text-blue-400" />
               <div>
-                <h2 className="font-pixel text-slate-200 text-sm">QUEST GUIDE</h2>
-                <p className="font-pixel text-[7px] text-slate-600">Panduan misi untuk Eco Warrior</p>
+                <h2 className="font-pixel text-base md:text-xl">PANDUAN</h2>
+                <p className="font-pixel text-[8px] md:text-[10px] text-slate-600 md:mt-1">Cara menggunakan mesin RVM</p>
               </div>
             </div>
 
-            <div className="space-y-1">
-              {guides?.length > 0 ? guides.sort((a: any, b: any) => a.step_number - b.step_number).map((g: any, idx: number) => {
-                // Simple completion logic: step 1 always done if user exists, step 2 if user has any earn, etc.
-                const isComplete = g.step_number <= Math.min(totalBottles > 0 ? 4 : 1, g.step_number);
-                const isCurrent = !isComplete && (idx === 0 || (guides[idx - 1] && guides[idx - 1].step_number <= (totalBottles > 0 ? 4 : 1)));
-                const isLocked = !isComplete && !isCurrent;
-
+            <div className="space-y-2">
+              {guides?.length > 0 ? guides.sort((a: any, b: any) => a.step_number - b.step_number).map((g: any) => {
                 return (
-                  <div key={g.id} className="relative">
-                    {/* Connector line */}
-                    {idx < guides.length - 1 && (
-                      <div className={`absolute left-[19px] top-[48px] w-0.5 h-4 z-0 ${isComplete ? 'bg-green-600' : 'bg-slate-700'}`} />
-                    )}
+                  <div key={g.id} className="relative z-10 flex items-start gap-4 md:gap-6 p-4 md:p-6 pixel-border bg-slate-900/70 border-t-2 border-t-blue-500/30 backdrop-blur-sm">
+                    {/* Step indicator */}
+                    <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center shrink-0 border-2 bg-slate-800 border-blue-600 text-blue-400">
+                      <span className="font-pixel text-sm md:text-base">{g.step_number}</span>
+                    </div>
 
-                    <div className={`relative z-10 flex items-start gap-4 p-4 transition-all ${
-                      isComplete ? 'pixel-border bg-green-950/15 border-green-800/30' :
-                      isCurrent ? 'pixel-border bg-yellow-950/10 border-yellow-700/30 animate-pulse' :
-                      'pixel-border bg-slate-900/50 border-slate-700/30 opacity-50'
-                    }`}>
-                      {/* Step indicator */}
-                      <div className={`w-10 h-10 flex items-center justify-center shrink-0 border-2 ${
-                        isComplete ? 'bg-green-700 border-green-500 text-green-100' :
-                        isCurrent ? 'bg-yellow-800/50 border-yellow-600 text-yellow-400' :
-                        'bg-slate-800 border-slate-600 text-slate-500'
-                      }`}>
-                        {isComplete ? <Check className="w-5 h-5" /> :
-                         isLocked ? <Lock className="w-4 h-4" /> :
-                         <span className="font-pixel text-xs">{g.step_number}</span>}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1 md:mb-2">
+                        <h3 className="font-pixel text-[10px] md:text-sm text-blue-300">
+                          {g.title}
+                        </h3>
                       </div>
-
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className={`font-pixel text-[9px] ${isComplete ? 'text-green-400' : isCurrent ? 'text-yellow-400' : 'text-slate-500'}`}>
-                            {g.title}
-                          </h3>
-                          {isComplete && <span className="font-pixel text-[6px] bg-green-500/20 text-green-400 px-1.5 py-0.5">DONE</span>}
-                          {isCurrent && <span className="font-pixel text-[6px] bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5">ACTIVE</span>}
-                        </div>
-                        <p className={`font-pixel-body text-sm ${isLocked ? 'text-slate-600' : 'text-slate-400'}`}>{g.description}</p>
-                      </div>
+                      <p className="font-pixel-body text-base md:text-base text-slate-400">{g.description}</p>
                     </div>
                   </div>
                 );
-              }) : <p className="text-slate-500 text-center font-pixel-body">Panduan sedang dimuat...</p>}
+              }) : <p className="text-slate-500 text-center font-pixel-body md:text-lg py-8">Panduan sedang dimuat...</p>}
             </div>
           </div>
         )}
 
         {/* ═══ TAB: NOTIFICATIONS ═══ */}
         {tab === 'info' && (
-          <div className="space-y-4">
+          <div className="space-y-4 md:space-y-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Bell className="w-5 h-5 text-amber-500" />
+              <div className="flex items-center gap-3 md:gap-5">
+                <Bell className="w-5 h-5 md:w-8 md:h-8 text-amber-500" />
                 <div>
-                  <h2 className="font-pixel text-slate-200 text-sm">NOTIFIKASI</h2>
-                  <p className="font-pixel text-[7px] text-slate-600">Info 12 jam terakhir</p>
+                  <h2 className="font-pixel text-slate-200 text-base md:text-lg md:text-xl">NOTIFIKASI</h2>
+                  <p className="font-pixel text-[7px] md:text-[10px] text-slate-600 md:mt-1 md:mt-2">Info 12 jam terakhir</p>
                 </div>
               </div>
             </div>
 
             {notifications && notifications.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-2 md:space-y-4">
                 {notifications.map((n: any) => (
-                  <div key={n.id} className="pixel-border bg-slate-900/70 backdrop-blur-sm p-4 border-l-2 border-amber-600/50 flex items-start gap-3 hover:bg-slate-800/50 transition-colors">
-                    <div className="mt-0.5 shrink-0">
-                      {n.type === 'reward' ? <Gift className="w-4 h-4 text-green-400" /> : <Droplets className="w-4 h-4 text-blue-400" />}
+                  <div key={n.id} className="pixel-border bg-slate-900/70 backdrop-blur-sm p-4 md:p-6 border-l-2 md:border-l-4 border-amber-600/50 flex items-start gap-3 md:gap-5 hover:bg-slate-800/50 transition-colors">
+                    <div className="mt-0.5 md:mt-1 shrink-0">
+                      {n.type === 'reward' ? <Gift className="w-4 h-4 md:w-6 md:h-6 text-green-400" /> : <Droplets className="w-4 h-4 md:w-6 md:h-6 text-blue-400" />}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-pixel-body text-slate-200 text-sm">{n.message}</p>
-                      <p className="font-pixel text-[7px] text-slate-600 mt-1">{new Date(n.timestamp).toLocaleString('id-ID')}</p>
+                      <p className="font-pixel-body text-slate-200 text-base md:text-lg md:text-xl">{n.message}</p>
+                      <p className="font-pixel text-[7px] md:text-[10px] text-slate-600 mt-1 md:mt-2">{new Date(n.timestamp).toLocaleString('id-ID')}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 pixel-border bg-slate-900/70">
-                <AlertCircle className="w-8 h-8 text-slate-600 mx-auto mb-3" />
-                <p className="font-pixel text-[9px] text-slate-600">Tidak ada notifikasi baru.</p>
+              <div className="text-center py-12 md:py-20 pixel-border bg-slate-900/70">
+                <AlertCircle className="w-8 h-8 md:w-16 md:h-16 text-slate-600 mx-auto mb-3 md:mb-5" />
+                <p className="font-pixel text-[9px] md:text-sm text-slate-600">Tidak ada notifikasi baru.</p>
               </div>
             )}
           </div>
@@ -481,121 +457,130 @@ export default function Dashboard() {
           const getRankColor = (r: number) => r === 1 ? 'text-yellow-400' : r === 2 ? 'text-slate-300' : r === 3 ? 'text-amber-600' : 'text-slate-500';
 
           return (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Crown className="w-5 h-5 text-yellow-500" />
+            <div className="space-y-4 md:space-y-6">
+              <div className="flex items-center gap-3 md:gap-5">
+                <Crown className="w-5 h-5 md:w-8 md:h-8 text-yellow-500" />
                 <div>
-                  <h2 className="font-pixel text-slate-200 text-sm">LEADERBOARD</h2>
-                  <p className="font-pixel text-[7px] text-slate-600">Peringkat Eco Warrior kampus</p>
+                  <h2 className="font-pixel text-slate-200 text-sm md:text-xl">LEADERBOARD</h2>
+                  <p className="font-pixel text-[7px] md:text-[10px] text-slate-600 md:mt-1">Peringkat Eco Warrior kampus</p>
                 </div>
               </div>
 
               {/* Your Rank */}
-              <div className="pixel-border bg-green-950/20 border-green-800/30 p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-slate-800 border border-green-700/40 flex items-center justify-center">
-                    <span className="font-pixel text-green-400 text-xs">#{myRank}</span>
+              <div className="pixel-border bg-green-950/20 border-green-800/30 p-4 md:p-6 flex items-center justify-between">
+                <div className="flex items-center gap-3 md:gap-5">
+                  <div className="w-10 h-10 md:w-16 md:h-16 bg-slate-800 border border-green-700/40 flex items-center justify-center">
+                    <span className="font-pixel text-green-400 text-xs md:text-xl">#{myRank}</span>
                   </div>
                   <div>
-                    <p className="font-pixel text-[8px] text-slate-400">PERINGKATMU</p>
-                    <p className="font-pixel text-[9px] text-green-400 mt-0.5">{getRankTitle(myRank)}</p>
+                    <p className="font-pixel text-[8px] md:text-xs text-slate-400">PERINGKATMU</p>
+                    <p className="font-pixel text-[9px] md:text-sm text-green-400 mt-0.5 md:mt-1">{getRankTitle(myRank)}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-pixel text-yellow-500 text-xs flex items-center gap-1 justify-end"><Star className="w-3 h-3" /> {points.toLocaleString()}</p>
-                  <p className="font-pixel text-[6px] text-slate-600 mt-0.5">LVL {level}</p>
+                  <p className="font-pixel text-yellow-500 text-xs md:text-lg flex items-center gap-1 md:gap-2 justify-end"><Star className="w-3 h-3 md:w-5 md:h-5" /> {points.toLocaleString()}</p>
+                  <p className="font-pixel text-[6px] md:text-[9px] text-slate-600 mt-0.5 md:mt-2">LVL {level}</p>
                 </div>
               </div>
 
+              {/* Spacer to fix space-y override */}
+              <div className="h-40 md:h-64 w-full"></div>
+
               {/* Top 3 Podium */}
               {ranked.length >= 3 && (
-                <div className="grid grid-cols-3 gap-2 items-end mt-20">
-                  {/* 2nd */}
-                  <div className="pixel-border bg-slate-900/70 p-3 text-center relative mt-24">
-                    <div className="absolute -top-28 left-0 right-0 flex justify-center pointer-events-none">
-                      <img src={`/character/${ranked[1]?.character || 'ninja.png'}`} alt="2nd" className="w-32 h-32 object-contain drop-shadow-md pixel-float" style={{ animationDelay: '1s' }} />
+                <div className="flex items-end justify-center gap-1 md:gap-3 mb-8 md:mb-12 px-2 md:px-8">
+                  {/* 2nd Place */}
+                  <div className="flex flex-col items-center flex-1 relative">
+                    <div className="absolute bottom-full mb-1 md:mb-2 w-full flex justify-center pointer-events-none">
+                      <img src={`/character/${ranked[1]?.character || 'ninja.png'}`} alt="2nd" className="w-20 h-20 md:w-36 md:h-36 object-contain drop-shadow-md pixel-float" style={{ animationDelay: '1s' }} />
                     </div>
-                    <div className="h-12 flex items-end justify-center mb-2">
-                      <div className="w-full bg-slate-800 border-t-3 border-slate-500" style={{ height: '40px' }}>
-                        <span className="font-pixel text-slate-400 text-base block pt-2">#2</span>
-                      </div>
+                    {/* Podium block */}
+                    <div className="w-full bg-slate-800 border-t-4 border-slate-500 h-[80px] md:h-[120px] flex flex-col items-center justify-start pt-2 md:pt-4 pixel-border-sides rounded-t-sm relative shadow-[0_0_15px_rgba(100,116,139,0.2)]">
+                      <span className="font-pixel text-slate-400 text-lg md:text-2xl">2nd</span>
+                      <Medal className="w-4 h-4 md:w-6 md:h-6 text-slate-400 mt-1 md:mt-2" />
                     </div>
-                    <Medal className="w-4 h-4 text-slate-400 mx-auto mb-1" />
-                    <p className="font-pixel text-[7px] text-slate-300 truncate">{ranked[1]?.name}</p>
-                    <p className="font-pixel text-[6px] text-slate-500 mt-0.5">{ranked[1]?.points?.toLocaleString()} XP</p>
+                    {/* User Info below podium */}
+                    <div className="text-center mt-2 md:mt-4 w-full">
+                      <p className="font-pixel text-[8px] md:text-xs text-slate-300 truncate px-1">{ranked[1]?.name}</p>
+                      <p className="font-pixel text-[7px] md:text-[10px] text-slate-500 mt-1">{ranked[1]?.points?.toLocaleString()} XP</p>
+                    </div>
                   </div>
 
-                  {/* 1st */}
-                  <div className="pixel-border bg-slate-900/70 p-3 text-center relative mt-24" style={{ boxShadow: '0 0 20px rgba(234,179,8,0.15)' }}>
-                    <div className="absolute -top-36 left-0 right-0 flex justify-center pointer-events-none">
-                      <img src={`/character/${ranked[0]?.character || 'ninja.png'}`} alt="1st" className="w-40 h-40 object-contain drop-shadow-xl pixel-float" />
+                  {/* 1st Place */}
+                  <div className="flex flex-col items-center flex-1 relative z-10">
+                    <div className="absolute bottom-full mb-1 md:mb-2 w-full flex justify-center pointer-events-none">
+                      <img src={`/character/${ranked[0]?.character || 'ninja.png'}`} alt="1st" className="w-28 h-28 md:w-48 md:h-48 object-contain drop-shadow-xl pixel-float" />
                     </div>
-                    <div className="h-16 flex items-end justify-center mb-2">
-                      <div className="w-full bg-yellow-950/40 border-t-3 border-yellow-500" style={{ height: '56px' }}>
-                        <Crown className="w-5 h-5 text-yellow-500 mx-auto mt-1.5" />
-                        <span className="font-pixel text-yellow-400 text-base block">#1</span>
-                      </div>
+                    {/* Podium block */}
+                    <div className="w-full bg-yellow-900 border-t-4 border-yellow-500 h-[110px] md:h-[160px] flex flex-col items-center justify-start pt-2 md:pt-4 pixel-border-sides rounded-t-sm relative shadow-[0_0_20px_rgba(234,179,8,0.3)]">
+                      <Crown className="w-5 h-5 md:w-8 md:h-8 text-yellow-500 mb-1" />
+                      <span className="font-pixel text-yellow-400 text-xl md:text-3xl">1st</span>
                     </div>
-                    <p className="font-pixel text-[8px] text-yellow-400 truncate">{ranked[0]?.name}</p>
-                    <p className="font-pixel text-[7px] text-yellow-500 mt-0.5">{ranked[0]?.points?.toLocaleString()} XP</p>
+                    {/* User Info below podium */}
+                    <div className="text-center mt-2 md:mt-4 w-full">
+                      <p className="font-pixel text-[9px] md:text-sm text-yellow-400 truncate px-1">{ranked[0]?.name}</p>
+                      <p className="font-pixel text-[8px] md:text-[11px] text-yellow-500 mt-1">{ranked[0]?.points?.toLocaleString()} XP</p>
+                    </div>
                   </div>
 
-                  {/* 3rd */}
-                  <div className="pixel-border bg-slate-900/70 p-3 text-center relative mt-24">
-                    <div className="absolute -top-20 left-0 right-0 flex justify-center pointer-events-none">
-                      <img src={`/character/${ranked[2]?.character || 'ninja.png'}`} alt="3rd" className="w-24 h-24 object-contain drop-shadow-md pixel-float" style={{ animationDelay: '2s' }} />
+                  {/* 3rd Place */}
+                  <div className="flex flex-col items-center flex-1 relative">
+                    <div className="absolute bottom-full mb-1 md:mb-2 w-full flex justify-center pointer-events-none">
+                      <img src={`/character/${ranked[2]?.character || 'ninja.png'}`} alt="3rd" className="w-16 h-16 md:w-28 md:h-28 object-contain drop-shadow-md pixel-float" style={{ animationDelay: '2s' }} />
                     </div>
-                    <div className="h-10 flex items-end justify-center mb-2">
-                      <div className="w-full bg-amber-950/30 border-t-3 border-amber-700" style={{ height: '32px' }}>
-                        <span className="font-pixel text-amber-600 text-base block pt-1">#3</span>
-                      </div>
+                    {/* Podium block */}
+                    <div className="w-full bg-amber-950 border-t-4 border-amber-700 h-[60px] md:h-[90px] flex flex-col items-center justify-start pt-2 md:pt-4 pixel-border-sides rounded-t-sm relative shadow-[0_0_15px_rgba(180,83,9,0.2)]">
+                      <span className="font-pixel text-amber-600 text-lg md:text-xl">3rd</span>
+                      <Medal className="w-4 h-4 md:w-6 md:h-6 text-amber-600 mt-1 md:mt-2" />
                     </div>
-                    <Medal className="w-4 h-4 text-amber-600 mx-auto mb-1" />
-                    <p className="font-pixel text-[7px] text-amber-500 truncate">{ranked[2]?.name}</p>
-                    <p className="font-pixel text-[6px] text-slate-500 mt-0.5">{ranked[2]?.points?.toLocaleString()} XP</p>
+                    {/* User Info below podium */}
+                    <div className="text-center mt-2 md:mt-4 w-full">
+                      <p className="font-pixel text-[8px] md:text-xs text-amber-500 truncate px-1">{ranked[2]?.name}</p>
+                      <p className="font-pixel text-[7px] md:text-[10px] text-slate-500 mt-1">{ranked[2]?.points?.toLocaleString()} XP</p>
+                    </div>
                   </div>
                 </div>
               )}
 
               {/* Full Rankings */}
-              <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-pixel text-[9px] text-slate-400 flex items-center gap-2"><Swords className="w-4 h-4 text-slate-500" /> ALL RECYCLERS</h3>
-                  <span className="font-pixel text-[7px] text-slate-600">{ranked.length} PLAYERS</span>
+              <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-green-500/20 p-4 md:p-6">
+                <div className="flex items-center justify-between mb-3 md:mb-5">
+                  <h3 className="font-pixel text-[9px] md:text-sm text-slate-400 flex items-center gap-2"><Swords className="w-4 h-4 text-slate-500" /> ALL RECYCLERS</h3>
+                  <span className="font-pixel text-[7px] md:text-[10px] text-slate-600">{ranked.length} PLAYERS</span>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1 md:space-y-2">
                   {ranked.map((user, i) => {
                     const rank = i + 1;
                     const isMe = user.id === currentUser.id;
                     const userLevel = Math.floor(user.points / 500) + 1;
                     return (
                       <div key={user.id}
-                        className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${
-                          isMe ? 'bg-green-950/20 border-l-2 border-green-500' :
-                          rank <= 3 ? 'bg-slate-800/30 border-l-2 border-slate-700' :
-                          'border-l-2 border-transparent hover:bg-slate-800/20'
+                        className={`flex items-center gap-3 md:gap-5 px-3 md:px-5 py-2.5 md:py-4 transition-colors ${
+                          isMe ? 'bg-green-950/20 border-l-2 md:border-l-4 border-green-500' :
+                          rank <= 3 ? 'bg-slate-800/30 border-l-2 md:border-l-4 border-slate-700' :
+                          'border-l-2 md:border-l-4 border-transparent hover:bg-slate-800/20'
                         }`}>
-                        <div className="w-6 flex items-center justify-center shrink-0">
-                          {rank === 1 && <Crown className="w-3.5 h-3.5 text-yellow-500" />}
-                          {rank === 2 && <Medal className="w-3.5 h-3.5 text-slate-400" />}
-                          {rank === 3 && <Medal className="w-3.5 h-3.5 text-amber-600" />}
-                          {rank > 3 && <span className="font-pixel text-[8px] text-slate-600">#{rank}</span>}
+                        <div className="w-6 md:w-10 flex items-center justify-center shrink-0">
+                          {rank === 1 && <Crown className="w-3.5 h-3.5 md:w-6 md:h-6 text-yellow-500" />}
+                          {rank === 2 && <Medal className="w-3.5 h-3.5 md:w-6 md:h-6 text-slate-400" />}
+                          {rank === 3 && <Medal className="w-3.5 h-3.5 md:w-6 md:h-6 text-amber-600" />}
+                          {rank > 3 && <span className="font-pixel text-[8px] md:text-xs text-slate-600">#{rank}</span>}
                         </div>
 
-                        <div className="w-7 h-7 flex items-center justify-center shrink-0 bg-slate-800 border border-slate-700/50">
-                          <img src={`/character/${user.character || 'ninja.png'}`} alt="avatar" className="w-5 h-5 object-contain" />
+                        <div className="w-7 h-7 md:w-10 md:h-10 flex items-center justify-center shrink-0 bg-slate-800 border border-slate-700/50">
+                          <img src={`/character/${user.character || 'ninja.png'}`} alt="avatar" className="w-5 h-5 md:w-7 md:h-7 md:w-8 md:h-8 object-contain" />
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <p className={`font-pixel text-[8px] truncate ${isMe ? 'text-green-400' : 'text-slate-300'}`}>
+                          <p className={`font-pixel text-[8px] md:text-xs truncate ${isMe ? 'text-green-400' : 'text-slate-300'}`}>
                             {user.name} {isMe && '(YOU)'}
                           </p>
-                          <p className="font-pixel text-[6px] text-slate-600">{getRankTitle(rank)} • LVL {userLevel}</p>
+                          <p className="font-pixel text-[6px] md:text-[9px] text-slate-600 md:mt-1">{getRankTitle(rank)} • LVL {userLevel}</p>
                         </div>
 
-                        <span className={`font-pixel text-[8px] flex items-center gap-1 shrink-0 ${getRankColor(rank)}`}>
-                          <Flame className="w-3 h-3" /> {user.points.toLocaleString()}
+                        <span className={`font-pixel text-[8px] md:text-xs flex items-center gap-1 md:gap-2 shrink-0 ${getRankColor(rank)}`}>
+                          <Flame className="w-3 h-3 md:w-5 md:h-5" /> {user.points.toLocaleString()}
                         </span>
                       </div>
                     );
@@ -610,19 +595,19 @@ export default function Dashboard() {
 
       {/* ═══ Bottom Navigation Bar ═══ */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 border-t-2 border-green-900/40 backdrop-blur-lg">
-        <div className="max-w-6xl mx-auto flex">
+        <div className="max-w-4xl mx-auto flex">
           {navItems.map(n => {
             const isActive = tab === n.key;
             return (
-              <button key={n.key} onClick={() => setTab(n.key as typeof tab)}
-                className={`flex-1 flex flex-col items-center justify-center py-2.5 md:py-4 transition-all relative ${
+               <button key={n.key} onClick={() => setTab(n.key as typeof tab)}
+                className={`flex-1 flex flex-col items-center justify-center py-2.5 md:py-3 transition-all relative ${
                   isActive ? 'text-green-400' : 'text-slate-600 hover:text-slate-400'
                 }`}>
                 {isActive && <div className="absolute top-0 left-1/4 right-1/4 h-0.5 md:h-1 bg-green-500" />}
-                <div className={`transition-transform [&>svg]:md:w-7 [&>svg]:md:h-7 ${isActive ? 'scale-110 -translate-y-0.5 md:-translate-y-1' : ''}`}>
+                <div className={`transition-transform [&>svg]:md:w-6 [&>svg]:md:h-6 ${isActive ? 'scale-110 -translate-y-0.5 md:-translate-y-1' : ''}`}>
                   {n.icon}
                 </div>
-                <span className={`font-pixel text-[7px] md:text-[9px] mt-1 md:mt-2 ${isActive ? 'text-green-400' : 'text-slate-600'}`}>
+                <span className={`font-pixel text-[8px] md:text-[9px] mt-1 md:mt-2 ${isActive ? 'text-green-400' : 'text-slate-600'}`}>
                   {n.label}
                 </span>
               </button>
