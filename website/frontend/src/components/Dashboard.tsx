@@ -3,7 +3,8 @@ import {
   LogOut, Star, Trophy, Droplets, Leaf, Activity, AlertCircle,
   ShoppingBag, Clock, BookOpen, Gift, Crown, Medal, Flame,
   Swords, Bell, Home, Zap, Lock, Check, Target, Volume2,
-  Music, SkipBack, SkipForward, Play, Pause, ArrowRight
+  Music, SkipBack, SkipForward, Play, Pause, ArrowRight,
+  Ticket, QrCode, ScanLine
 } from 'lucide-react';
 import { useAppStore } from '../store';
 
@@ -316,9 +317,22 @@ export default function Dashboard() {
             {/* Claim Receipt Button */}
             <button 
               onClick={() => setShowClaimModal(true)}
-              className="pixel-btn w-full bg-blue-700 hover:bg-blue-600 text-blue-100 py-3 md:py-4 font-pixel text-xs md:text-sm flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+              className="group relative w-full pixel-border bg-gradient-to-r from-blue-950 to-indigo-950 border-2 border-blue-500/50 p-3 md:p-5 overflow-hidden transition-all hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] mt-4 mb-4"
             >
-              <Zap className="w-4 h-4 md:w-5 md:h-5 text-yellow-400" /> KLAIM STRUK MESIN RVM
+              <div className="absolute -inset-[100%] animate-[spin_3s_linear_infinite] bg-gradient-to-r from-transparent via-blue-400/10 to-transparent"></div>
+              
+              <div className="relative z-10 flex items-center justify-center gap-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-900/50 border border-blue-400/50 flex items-center justify-center shadow-[inset_0_0_10px_rgba(59,130,246,0.5)] shrink-0">
+                  <ScanLine className="w-5 h-5 md:w-6 md:h-6 text-blue-300 animate-pulse" />
+                </div>
+                <div className="text-left flex-1 min-w-0">
+                  <div className="font-pixel text-blue-100 text-[10px] md:text-sm tracking-wider drop-shadow-md truncate">KLAIM STRUK MESIN</div>
+                  <div className="font-pixel-body text-blue-400 text-[8px] md:text-xs truncate">Tukar tiket fisik jadi XP!</div>
+                </div>
+                <div className="w-8 h-8 flex items-center justify-center bg-blue-500/20 shrink-0">
+                  <ArrowRight className="w-4 h-4 text-blue-300 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
             </button>
 
             {/* Daily Quest */}
@@ -756,25 +770,37 @@ export default function Dashboard() {
 
       {/* ═══ CLAIM MODAL ═══ */}
       {showClaimModal && (
-        <div className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
-          <div className="pixel-border bg-slate-900 border-2 border-blue-500/50 p-6 md:p-8 w-full max-w-md relative shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+        <div className="fixed inset-0 bg-black/90 z-[60] flex items-center justify-center p-4 backdrop-blur-md animate-fade-in">
+          <div className="pixel-border bg-gradient-to-b from-slate-900 to-black border-2 border-blue-500/50 p-6 md:p-8 w-full max-w-md relative shadow-[0_0_50px_rgba(59,130,246,0.3)] overflow-hidden">
+            {/* Hologram Effect */}
+            <div className="absolute inset-0 bg-[url('/scanlines.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
+            
             <button 
               onClick={() => setShowClaimModal(false)}
-              className="absolute top-2 right-4 md:top-4 md:right-6 font-pixel text-slate-500 hover:text-slate-300 text-xl"
+              className="absolute top-2 right-4 md:top-4 md:right-6 font-pixel text-slate-500 hover:text-slate-300 text-xl z-20"
             >
               x
             </button>
-            <h3 className="font-pixel text-blue-400 text-lg md:text-xl mb-2 text-center">KLAIM STRUK</h3>
-            <p className="font-pixel-body text-slate-400 text-xs md:text-sm text-center mb-6">Masukkan kode unik dari struk mesin RVM untuk mendapatkan XP.</p>
             
-            <input 
-              type="text" 
-              placeholder="Contoh: M1-1715-AB"
-              value={claimCode}
-              onChange={e => setClaimCode(e.target.value.toUpperCase())}
-              className="pixel-input w-full px-4 py-3 text-center font-pixel text-lg md:text-xl text-yellow-400 tracking-widest mb-6 uppercase"
-              autoFocus
-            />
+            <div className="flex justify-center mb-6 relative">
+              <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full animate-pulse"></div>
+              <Ticket className="w-16 h-16 md:w-20 md:h-20 text-blue-400 drop-shadow-[0_0_15px_rgba(59,130,246,0.8)] relative z-10 animate-bounce" />
+            </div>
+
+            <h3 className="font-pixel text-blue-400 text-xl md:text-2xl mb-2 text-center drop-shadow-md">KLAIM TIKET RVM</h3>
+            <p className="font-pixel-body text-slate-400 text-xs md:text-sm text-center mb-8">Masukkan kode unik dari tiket fisik RVM Anda untuk mencairkan XP.</p>
+            
+            <div className="relative mb-8">
+              <input 
+                type="text" 
+                placeholder="M1-1715-AB"
+                value={claimCode}
+                onChange={e => setClaimCode(e.target.value.toUpperCase())}
+                className="w-full bg-black/80 border-2 border-blue-500/50 px-4 py-4 text-center font-pixel text-2xl md:text-3xl text-green-400 tracking-[0.2em] md:tracking-[0.3em] uppercase placeholder:text-blue-900/50 focus:outline-none focus:border-green-400 focus:shadow-[0_0_20px_rgba(74,222,128,0.3)] transition-all"
+                autoFocus
+              />
+              <div className="absolute left-0 right-0 h-[2px] bg-blue-400/50 top-1/2 -translate-y-1/2 pointer-events-none mix-blend-screen opacity-30"></div>
+            </div>
             
             <button 
               onClick={async () => {
@@ -789,9 +815,12 @@ export default function Dashboard() {
                 }
               }}
               disabled={claimLoading || !claimCode}
-              className="pixel-btn w-full bg-green-600 hover:bg-green-500 text-green-100 py-3 font-pixel text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="pixel-btn w-full bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-600 hover:to-emerald-500 text-green-100 py-4 font-pixel text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed border-2 border-green-400/50 shadow-[0_0_20px_rgba(74,222,128,0.3)] relative overflow-hidden group"
             >
-              {claimLoading ? "MEMPROSES..." : "KLAIM SEKARANG!"}
+              <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                {claimLoading ? 'MEMPROSES...' : <><Zap className="w-5 h-5 text-yellow-400" /> KLAIM SEKARANG</>}
+              </span>
             </button>
           </div>
         </div>
