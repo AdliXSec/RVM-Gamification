@@ -142,10 +142,16 @@ export default function Dashboard() {
               <Star className="w-12 h-12 text-yellow-400 fill-yellow-400 animate-[spin_3s_linear_infinite]" />
             </div>
             <h2 className="font-pixel text-4xl md:text-5xl text-yellow-400 mb-2 drop-shadow-md mt-4 animate-pulse">LEVEL UP!</h2>
-            <div className="flex items-center justify-center gap-2 md:gap-4 mb-6">
-              <span className="font-pixel text-slate-300 text-sm md:text-base">LVL {levelUpData.old}</span>
-              <ArrowRight className="w-5 h-5 md:w-8 md:h-8 text-yellow-500 animate-pulse" />
-              <span className="font-pixel text-green-400 text-xl md:text-3xl">LVL {levelUpData.new}</span>
+            <div className="flex items-center justify-center w-full max-w-sm mx-auto mb-6">
+              <div className="flex-1 text-right">
+                <span className="font-pixel text-slate-300 text-sm md:text-base">LVL {levelUpData.old}</span>
+              </div>
+              <div className="px-3 md:px-6">
+                <ArrowRight className="w-5 h-5 md:w-8 md:h-8 text-yellow-500 animate-pulse" />
+              </div>
+              <div className="flex-1 text-left">
+                <span className="font-pixel text-green-400 text-xl md:text-3xl">LVL {levelUpData.new}</span>
+              </div>
             </div>
             <img src={`/character/${currentUser.character || 'ninja.png'}`} alt="avatar" className="w-24 h-24 md:w-32 md:h-32 mx-auto object-contain drop-shadow-xl animate-bounce mb-8" />
             <button 
