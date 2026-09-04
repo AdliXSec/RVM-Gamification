@@ -419,37 +419,6 @@ export default function AdminPanel() {
                 </Card>
               </div>
 
-              {/* Pending redemptions */}
-              <Card accent="purple">
-                <SectionTitle icon={<Gift className="w-4 h-4 text-purple-400" />}>
-                  PERMINTAAN TUKAR REWARD {pendingRedemptions > 0 && <span className="text-purple-400 ml-1">({pendingRedemptions})</span>}
-                </SectionTitle>
-                {redemptions.length === 0 ? (
-                  <EmptyState icon={<Gift />} text="TIDAK ADA PERMINTAAN TUKAR" />
-                ) : (
-                  <div className="space-y-3">
-                    {redemptions.map((req: any, i: number) => (
-                      <div key={i} className="bg-slate-800/50 border-l-2 border-purple-500 p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <div>
-                          <span className="font-pixel text-[9px] text-purple-300">{req.user?.name} (NIM: {req.user?.nim})</span>
-                          <p className="font-pixel-body text-slate-500 text-sm">{req.reward?.name} — {req.cost_at_redemption} XP</p>
-                          <p className="font-pixel text-[7px] text-slate-600">{req.created_at}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <button onClick={() => updateRewardStatus(req.id, 'completed')}
-                            className="pixel-btn bg-green-700 hover:bg-green-600 text-green-100 px-4 py-2 font-pixel text-[8px]">
-                            SETUJUI
-                          </button>
-                          <button onClick={() => updateRewardStatus(req.id, 'cancelled')}
-                            className="pixel-btn bg-red-800 hover:bg-red-700 text-red-100 px-4 py-2 font-pixel text-[8px]">
-                            TOLAK
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Card>
             </>)}
 
             {/* ═══ TAB: REWARDS ═══ */}
@@ -494,6 +463,40 @@ export default function AdminPanel() {
                           <button onClick={() => deleteReward(r.id)} className="text-slate-600 hover:text-red-400 p-2 transition-colors">
                             <Trash2 className="w-4 h-4" />
                           </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </div>
+
+              {/* Pending redemptions */}
+              <div className="mt-6">
+                <Card accent="purple">
+                  <SectionTitle icon={<Gift className="w-4 h-4 text-purple-400" />}>
+                    PERMINTAAN TUKAR REWARD {pendingRedemptions > 0 && <span className="text-purple-400 ml-1">({pendingRedemptions})</span>}
+                  </SectionTitle>
+                  {redemptions.length === 0 ? (
+                    <EmptyState icon={<Gift />} text="TIDAK ADA PERMINTAAN TUKAR" />
+                  ) : (
+                    <div className="space-y-3">
+                      {redemptions.map((req: any, i: number) => (
+                        <div key={i} className="bg-slate-800/50 border-l-2 border-purple-500 p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                          <div>
+                            <span className="font-pixel text-[9px] text-purple-300">{req.user?.name} (NIM: {req.user?.nim})</span>
+                            <p className="font-pixel-body text-slate-500 text-sm">{req.reward?.name} — {req.cost_at_redemption} XP</p>
+                            <p className="font-pixel text-[7px] text-slate-600">{req.created_at}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => updateRewardStatus(req.id, 'completed')}
+                              className="pixel-btn bg-green-700 hover:bg-green-600 text-green-100 px-4 py-2 font-pixel text-[8px]">
+                              SETUJUI
+                            </button>
+                            <button onClick={() => updateRewardStatus(req.id, 'cancelled')}
+                              className="pixel-btn bg-red-800 hover:bg-red-700 text-red-100 px-4 py-2 font-pixel text-[8px]">
+                              TOLAK
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
