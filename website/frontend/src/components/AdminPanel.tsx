@@ -635,15 +635,14 @@ export default function AdminPanel() {
                 )}
               </Card>
             )}
-
           </div>
+          
+          {/* ═══ Footer ═══ */}
+          <footer className="mt-12 border-t border-slate-800/60 pt-4 pb-2 text-center text-slate-600">
+            <p className="font-pixel text-[7px]">RVM_ADMIN_PANEL v2.4 // SYS_ONLINE // {new Date().toLocaleDateString('id-ID')}</p>
+          </footer>
         </main>
       </div>
-
-      {/* ═══ Footer ═══ */}
-      <footer className="border-t border-slate-800/60 bg-slate-900/40 px-4 py-3 text-center relative z-10 backdrop-blur-sm">
-        <p className="font-pixel text-[7px] text-slate-600">RVM_ADMIN_PANEL v2.4 // SYS_ONLINE // {new Date().toLocaleDateString('id-ID')}</p>
-      </footer>
     </div>
   );
 }
