@@ -32,7 +32,7 @@ class MachineController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:machines,name',
             'location' => 'nullable|string|max:255',
             'max_capacity' => 'nullable|integer|min:1',
         ]);
@@ -62,12 +62,12 @@ class MachineController extends Controller
     public function iotDeposit(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'machine_id' => 'required|exists:machines,id',
+            'name' => 'required|string|exists:machines,name',
             'bottles' => 'required|integer|min:1',
             'claim_code' => 'required|string|unique:receipts,claim_code',
         ]);
 
-        $machine = Machine::findOrFail($data['machine_id']);
+        $machine = Machine::where('name', $data['name'])->firstOrFail();
         
         // Simpan struk & update botol menggunakan MachineService
         $receipt = $this->machineService->iotDeposit($machine, (int) $data['bottles'], $data['claim_code']);
