@@ -31,6 +31,19 @@ export default function Dashboard() {
     { name: 'BGM 2', url: '/sound/bgm2.mp3' }
   ];
 
+  const playBuySound = () => {
+    if (!isMuted) {
+      const audio = new Audio('/sound/buy.mp3');
+      audio.volume = volume; // SFX shares the same volume or can be fixed
+      audio.play().catch((e) => console.log('SFX play failed:', e));
+    }
+  };
+
+  const handleRedeemClick = (cost: number, id: string) => {
+    playBuySound();
+    redeemReward(cost, id);
+  };
+
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
@@ -366,7 +379,7 @@ export default function Dashboard() {
                               : 'bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700'
                           }`}
                           disabled={!canAfford}
-                          onClick={() => redeemReward(item.cost, item.id)}
+                          onClick={() => handleRedeemClick(item.cost, item.id)}
                         >
                           {canAfford ? (
                             <span className="flex items-center justify-center gap-1 md:gap-2"><ShoppingBag className="w-3 h-3 md:w-5 md:h-5" /> TUKAR</span>
