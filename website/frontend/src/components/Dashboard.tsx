@@ -4,7 +4,7 @@ import {
   ShoppingBag, Clock, BookOpen, Gift, Crown, Medal, Flame,
   Swords, Bell, Home, Zap, Lock, Check, Target, Volume2,
   Music, SkipBack, SkipForward, Play, Pause, ArrowRight,
-  Ticket, QrCode, ScanLine
+  Ticket, ScanLine
 } from 'lucide-react';
 import { useAppStore } from '../store';
 
