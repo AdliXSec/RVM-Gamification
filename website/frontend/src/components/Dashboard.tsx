@@ -2,7 +2,8 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   LogOut, Star, Trophy, Droplets, Leaf, Activity, AlertCircle,
   ShoppingBag, Clock, BookOpen, Gift, Crown, Medal, Flame,
-  Swords, Bell, Home, Zap, Lock, Check, Target, Volume2, VolumeX
+  Swords, Bell, Home, Zap, Lock, Check, Target, Volume2, VolumeX,
+  Music, SkipBack, SkipForward, Play, Pause
 } from 'lucide-react';
 import { useAppStore } from '../store';
 
@@ -21,19 +22,25 @@ export default function Dashboard() {
   // Background Music State
   const [isMuted, setIsMuted] = useState(true);
   const [currentTrack, setCurrentTrack] = useState(0);
+  const [volume, setVolume] = useState(0.2);
+  const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const tracks = ['/sound/bgm.mp3', '/sound/bgm2.mp3'];
+  
+  const tracks = [
+    { name: 'BGM 1', url: '/sound/bgm.mp3' },
+    { name: 'BGM 2', url: '/sound/bgm2.mp3' }
+  ];
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = 0.2;
+      audioRef.current.volume = volume;
       if (!isMuted) {
         audioRef.current.play().catch(() => setIsMuted(true));
       } else {
         audioRef.current.pause();
       }
     }
-  }, [isMuted, currentTrack]);
+  }, [isMuted, currentTrack, volume]);
 
   if (!currentUser) return null;
 
@@ -114,28 +121,55 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Music Toggle */}
-          <button onClick={() => setIsMuted(!isMuted)} className={`transition-colors p-1 shrink-0 ${isMuted ? 'text-slate-600 hover:text-slate-400' : 'text-blue-400 hover:text-blue-300'}`}>
-            {isMuted ? <VolumeX className="w-4 h-4 md:w-5 md:h-5" /> : <Volume2 className="w-4 h-4 md:w-5 md:h-5" />}
-          </button>
+          {/* Music Control */}
+          <div className="relative">
+            <button onClick={() => setShowMusicPlayer(!showMusicPlayer)} className={`transition-colors p-1 shrink-0 ${isMuted ? 'text-slate-600 hover:text-slate-400' : 'text-blue-400 hover:text-blue-300'}`}>
+              <Music className="w-4 h-4 md:w-5 md:h-5" />
+            </button>
 
-          {/* Logout */}
-          <button onClick={logout} className="text-slate-600 hover:text-red-400 transition-colors p-1 shrink-0">
-            <LogOut className="w-4 h-4 md:w-5 md:h-5" />
-          </button>
+            {showMusicPlayer && (
+              <div className="absolute top-full right-0 mt-3 w-48 md:w-56 pixel-border bg-slate-900/95 border-blue-900/50 p-3 shadow-xl z-50 backdrop-blur-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-pixel text-[8px] md:text-[10px] text-blue-400">MUSIC PLAYER</span>
+                  <button onClick={() => setIsMuted(!isMuted)} className="text-slate-400 hover:text-white transition-colors">
+                    {isMuted ? <Play className="w-3 h-3 md:w-4 md:h-4" /> : <Pause className="w-3 h-3 md:w-4 md:h-4" />}
+                  </button>
+                </div>
+                
+                <div className="flex items-center justify-between mb-3 bg-slate-950/50 p-2 border border-slate-800">
+                  <button onClick={() => setCurrentTrack((p) => (p === 0 ? tracks.length - 1 : p - 1))} className="text-slate-400 hover:text-blue-400 transition-colors">
+                    <SkipBack className="w-3 h-3 md:w-4 md:h-4" />
+                  </button>
+                  <span className="font-pixel text-[7px] md:text-[9px] text-slate-300 truncate px-2">{tracks[currentTrack].name}</span>
+                  <button onClick={() => setCurrentTrack((p) => (p + 1) % tracks.length)} className="text-slate-400 hover:text-blue-400 transition-colors">
+                    <SkipForward className="w-3 h-3 md:w-4 md:h-4" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Volume2 className="w-3 h-3 md:w-4 md:h-4 text-slate-500 shrink-0" />
+                  <input 
+                    type="range" 
+                    min="0" max="1" step="0.05" 
+                    value={volume} 
+                    onChange={(e) => setVolume(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-slate-800 rounded-none appearance-none cursor-pointer accent-blue-500"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Background Audio */}
+          <audio 
+            ref={audioRef} 
+            src={tracks[currentTrack].url} 
+            onEnded={() => setCurrentTrack((prev) => (prev + 1) % tracks.length)} 
+            autoPlay={!isMuted}
+            loop={false}
+          />
         </div>
       </header>
-      
-      {/* Background Audio */}
-      <audio 
-        ref={audioRef} 
-        src={tracks[currentTrack]} 
-        onEnded={() => setCurrentTrack((prev) => (prev + 1) % tracks.length)} 
-        autoPlay={!isMuted}
-        loop={false}
-      />
-
-      {/* ═══ Main Content ═══ */}
       <main className="flex-1 w-full max-w-4xl mx-auto px-3 md:px-6 pt-20 pb-24 relative z-10">
 
         {/* ═══ TAB: HOME / BASE CAMP ═══ */}
