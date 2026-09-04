@@ -484,18 +484,18 @@ export default function Dashboard() {
               </div>
 
               {/* Spacer to fix space-y override */}
-              <div className="h-40 md:h-64 w-full"></div>
+              <div className="h-40 md:h-40 w-full"></div>
 
               {/* Top 3 Podium */}
               {ranked.length >= 3 && (
-                <div className="flex items-end justify-center gap-1 md:gap-3 mb-8 md:mb-12 px-2 md:px-8">
+                <div className="flex items-end justify-center gap-1 md:gap-3 mb-8 md:mb-12 px-1 md:px-8">
                   {/* 2nd Place */}
-                  <div className="flex flex-col items-center flex-1 relative">
+                  <div className="flex flex-col items-center flex-1 relative min-w-0">
                     <div className="absolute bottom-full mb-1 md:mb-2 w-full flex justify-center pointer-events-none">
                       <img src={`/character/${ranked[1]?.character || 'ninja.png'}`} alt="2nd" className="w-20 h-20 md:w-36 md:h-36 object-contain drop-shadow-md pixel-float" style={{ animationDelay: '1s' }} />
                     </div>
                     {/* Podium block */}
-                    <div className="w-full bg-slate-800 border-t-4 border-slate-500 h-[80px] md:h-[120px] flex flex-col items-center justify-start pt-2 md:pt-4 pixel-border-sides rounded-t-sm relative shadow-[0_0_15px_rgba(100,116,139,0.2)]">
+                    <div className="w-full bg-slate-800 border-t-4 border-slate-500 h-[80px] md:h-[120px] flex flex-col items-center justify-start pt-2 md:pt-4 rounded-t-sm relative shadow-[0_0_15px_rgba(100,116,139,0.2)]">
                       <span className="font-pixel text-slate-400 text-lg md:text-2xl">2nd</span>
                       <Medal className="w-4 h-4 md:w-6 md:h-6 text-slate-400 mt-1 md:mt-2" />
                     </div>
@@ -507,12 +507,12 @@ export default function Dashboard() {
                   </div>
 
                   {/* 1st Place */}
-                  <div className="flex flex-col items-center flex-1 relative z-10">
+                  <div className="flex flex-col items-center flex-[1.2] relative z-10 min-w-0">
                     <div className="absolute bottom-full mb-1 md:mb-2 w-full flex justify-center pointer-events-none">
                       <img src={`/character/${ranked[0]?.character || 'ninja.png'}`} alt="1st" className="w-28 h-28 md:w-48 md:h-48 object-contain drop-shadow-xl pixel-float" />
                     </div>
                     {/* Podium block */}
-                    <div className="w-full bg-yellow-900 border-t-4 border-yellow-500 h-[110px] md:h-[160px] flex flex-col items-center justify-start pt-2 md:pt-4 pixel-border-sides rounded-t-sm relative shadow-[0_0_20px_rgba(234,179,8,0.3)]">
+                    <div className="w-full bg-yellow-900 border-t-4 border-yellow-500 h-[110px] md:h-[160px] flex flex-col items-center justify-start pt-2 md:pt-4 rounded-t-sm relative shadow-[0_0_20px_rgba(234,179,8,0.3)]">
                       <Crown className="w-5 h-5 md:w-8 md:h-8 text-yellow-500 mb-1" />
                       <span className="font-pixel text-yellow-400 text-xl md:text-3xl">1st</span>
                     </div>
@@ -524,12 +524,12 @@ export default function Dashboard() {
                   </div>
 
                   {/* 3rd Place */}
-                  <div className="flex flex-col items-center flex-1 relative">
+                  <div className="flex flex-col items-center flex-1 relative min-w-0">
                     <div className="absolute bottom-full mb-1 md:mb-2 w-full flex justify-center pointer-events-none">
                       <img src={`/character/${ranked[2]?.character || 'ninja.png'}`} alt="3rd" className="w-16 h-16 md:w-28 md:h-28 object-contain drop-shadow-md pixel-float" style={{ animationDelay: '2s' }} />
                     </div>
                     {/* Podium block */}
-                    <div className="w-full bg-amber-950 border-t-4 border-amber-700 h-[60px] md:h-[90px] flex flex-col items-center justify-start pt-2 md:pt-4 pixel-border-sides rounded-t-sm relative shadow-[0_0_15px_rgba(180,83,9,0.2)]">
+                    <div className="w-full bg-amber-950 border-t-4 border-amber-700 h-[60px] md:h-[90px] flex flex-col items-center justify-start pt-2 md:pt-4 rounded-t-sm relative shadow-[0_0_15px_rgba(180,83,9,0.2)]">
                       <span className="font-pixel text-amber-600 text-lg md:text-xl">3rd</span>
                       <Medal className="w-4 h-4 md:w-6 md:h-6 text-amber-600 mt-1 md:mt-2" />
                     </div>
