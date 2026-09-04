@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   LogOut, Star, Trophy, Droplets, Leaf, Activity, AlertCircle,
   ShoppingBag, Clock, BookOpen, Gift, Crown, Medal, Flame,
-  Swords, Bell, Home, Zap, Lock, Check, Target, Volume2, VolumeX,
+  Swords, Bell, Home, Zap, Lock, Check, Target, Volume2,
   Music, SkipBack, SkipForward, Play, Pause
 } from 'lucide-react';
 import { useAppStore } from '../store';
@@ -159,6 +159,11 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+          
+          {/* Logout */}
+          <button onClick={logout} className="text-slate-600 hover:text-red-400 transition-colors p-1 shrink-0">
+            <LogOut className="w-4 h-4 md:w-5 md:h-5" />
+          </button>
           
           {/* Background Audio */}
           <audio 
