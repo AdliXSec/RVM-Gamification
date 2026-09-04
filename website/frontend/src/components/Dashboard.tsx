@@ -145,7 +145,9 @@ export default function Dashboard() {
             <p className="font-pixel text-slate-300 text-sm md:text-base mb-6">
               LVL {levelUpData.old} <span className="text-yellow-500 mx-2">→</span> <span className="text-green-400 text-xl md:text-3xl">LVL {levelUpData.new}</span>
             </p>
-            <img src={`/character/${currentUser.character || 'ninja.png'}`} alt="avatar" className="w-24 h-24 md:w-32 md:h-32 mx-auto object-contain drop-shadow-xl animate-bounce mb-8" />
+            <div className="flex justify-center mb-8 animate-bounce">
+              <Trophy className="w-24 h-24 md:w-32 md:h-32 text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.8)]" />
+            </div>
             <button 
               onClick={() => setShowLevelUp(false)}
               className="pixel-btn bg-yellow-600 hover:bg-yellow-500 text-yellow-100 px-8 py-3 font-pixel text-sm md:text-base w-full transition-all"
