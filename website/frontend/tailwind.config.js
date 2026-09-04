@@ -55,7 +55,9 @@ export default {
       },
       animation: {
         'spin-slow': 'spin 8s linear infinite',
-        'marquee': 'marquee 25s linear infinite',
+        'marquee': 'marquee 80s linear infinite',
+        'fade-in': 'fadeIn 0.5s ease-out forwards',
+        'float': 'float 3s ease-in-out infinite',
       },
       keyframes: {
         marquee: {
