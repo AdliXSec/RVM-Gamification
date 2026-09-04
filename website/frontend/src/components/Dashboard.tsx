@@ -32,11 +32,9 @@ export default function Dashboard() {
   ];
 
   const playBuySound = () => {
-    if (!isMuted) {
-      const audio = new Audio('/sound/buy.mp3');
-      audio.volume = volume; // SFX shares the same volume or can be fixed
-      audio.play().catch((e) => console.log('SFX play failed:', e));
-    }
+    const audio = new Audio('/sound/buy.mp3');
+    audio.volume = 0.8; // Fixed volume for SFX, independent of BGM
+    audio.play().catch((e) => console.log('SFX play failed:', e));
   };
 
   const handleRedeemClick = (cost: number, id: string) => {
