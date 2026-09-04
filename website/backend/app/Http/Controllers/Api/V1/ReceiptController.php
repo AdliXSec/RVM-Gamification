@@ -51,17 +51,29 @@ class ReceiptController extends Controller
             // Add points
             $user->increment('points', $receipt->xp_value);
 
-            // Log transaction
+            // Log transaction (Update the pending one)
             $machineName = $receipt->machine->name ?? 'Mesin RVM';
-            Transaction::create([
-                'user_id' => $user->id,
-                'machine_id' => $receipt->machine_id,
-                'type' => 'earn',
-                'description' => "{$receipt->bottles_count} botol masuk ke {$machineName}",
-                'amount' => $receipt->xp_value,
-                'bottles_count' => $receipt->bottles_count,
-                'status' => 'completed',
-            ]);
+            $transaction = Transaction::where('receipt_id', $receipt->id)->first();
+            
+            if ($transaction) {
+                $transaction->update([
+                    'user_id' => $user->id,
+                    'description' => "{$receipt->bottles_count} botol masuk ke {$machineName}",
+                    'status' => 'completed'
+                ]);
+            } else {
+                // Fallback jika transaksi pending tidak ada (legacy)
+                Transaction::create([
+                    'user_id' => $user->id,
+                    'machine_id' => $receipt->machine_id,
+                    'receipt_id' => $receipt->id,
+                    'type' => 'earn',
+                    'description' => "{$receipt->bottles_count} botol masuk ke {$machineName}",
+                    'amount' => $receipt->xp_value,
+                    'bottles_count' => $receipt->bottles_count,
+                    'status' => 'completed',
+                ]);
+            }
 
             // Clear cache
             Cache::forget('leaderboard');

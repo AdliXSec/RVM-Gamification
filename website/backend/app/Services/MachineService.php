@@ -108,8 +108,20 @@ class MachineService
                 'expires_at' => now()->addDays(7),
             ]);
 
+            \App\Models\Transaction::create([
+                'user_id' => null,
+                'machine_id' => $machine->id,
+                'receipt_id' => $receipt->id,
+                'type' => 'earn',
+                'description' => "{$actualBottles} botol masuk ke {$machine->name} (Menunggu Klaim)",
+                'amount' => $xp,
+                'bottles_count' => $actualBottles,
+                'status' => 'pending',
+            ]);
+
             // Invalidate caches
             Cache::forget('campus_stats');
+            Cache::forget('leaderboard');
 
             // Auto-create ticket if >= 80%
             $percentage = round(($newBottles / $lockedMachine->max_capacity) * 100);

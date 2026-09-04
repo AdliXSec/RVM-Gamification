@@ -659,8 +659,8 @@ export default function AdminPanel() {
                             {log.type === 'earn'
                               ? <ArrowUpRight className="w-3 h-3 text-green-400 shrink-0" />
                               : <ArrowDownRight className="w-3 h-3 text-purple-400 shrink-0" />}
-                            <span className="truncate">{log.user.name}</span>
-                            <span className="text-slate-600">#{log.user.nim}</span>
+                            <span className="truncate">{log.user ? log.user.name : "Belum Diklaim"}</span>
+                            <span className="text-slate-600">{log.user ? "#" + log.user.nim : "-"}</span>
                           </div>
                           <p className="font-pixel-body text-slate-500 text-xs truncate ml-5">{log.desc}</p>
                           <span className="font-pixel text-[7px] text-slate-600 ml-5">{log.date}</span>
