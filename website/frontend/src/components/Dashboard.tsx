@@ -16,9 +16,14 @@ function getRewardTier(cost: number) {
 }
 
 export default function Dashboard() {
-  const { currentUser, users, stats, machines, rewards, logout, redeemReward, settings, notifications, guides } = useAppStore();
+  const { currentUser, users, stats, machines, rewards, logout, redeemReward, claimReceipt, settings, notifications, guides } = useAppStore();
   const [tab, setTab] = useState<'home' | 'rank' | 'shop' | 'log' | 'quest' | 'info'>('home');
   
+  // Claim Receipt State
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [claimCode, setClaimCode] = useState('');
+  const [claimLoading, setClaimLoading] = useState(false);
+
   // Background Music State
   const [isMuted, setIsMuted] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(0);
@@ -307,6 +312,14 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
+
+            {/* Claim Receipt Button */}
+            <button 
+              onClick={() => setShowClaimModal(true)}
+              className="pixel-btn w-full bg-blue-700 hover:bg-blue-600 text-blue-100 py-3 md:py-4 font-pixel text-xs md:text-sm flex items-center justify-center gap-2 transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+            >
+              <Zap className="w-4 h-4 md:w-5 md:h-5 text-yellow-400" /> KLAIM STRUK MESIN RVM
+            </button>
 
             {/* Daily Quest */}
             <div className="pixel-border bg-slate-900/70 backdrop-blur-sm border-t-2 border-t-yellow-500/30 p-4 md:p-6">
@@ -740,6 +753,49 @@ export default function Dashboard() {
         })()}
 
       </main>
+
+      {/* ═══ CLAIM MODAL ═══ */}
+      {showClaimModal && (
+        <div className="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+          <div className="pixel-border bg-slate-900 border-2 border-blue-500/50 p-6 md:p-8 w-full max-w-md relative shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+            <button 
+              onClick={() => setShowClaimModal(false)}
+              className="absolute top-2 right-4 md:top-4 md:right-6 font-pixel text-slate-500 hover:text-slate-300 text-xl"
+            >
+              x
+            </button>
+            <h3 className="font-pixel text-blue-400 text-lg md:text-xl mb-2 text-center">KLAIM STRUK</h3>
+            <p className="font-pixel-body text-slate-400 text-xs md:text-sm text-center mb-6">Masukkan kode unik dari struk mesin RVM untuk mendapatkan XP.</p>
+            
+            <input 
+              type="text" 
+              placeholder="Contoh: M1-1715-AB"
+              value={claimCode}
+              onChange={e => setClaimCode(e.target.value.toUpperCase())}
+              className="pixel-input w-full px-4 py-3 text-center font-pixel text-lg md:text-xl text-yellow-400 tracking-widest mb-6 uppercase"
+              autoFocus
+            />
+            
+            <button 
+              onClick={async () => {
+                if(!claimCode) return;
+                setClaimLoading(true);
+                try {
+                  await claimReceipt(claimCode);
+                  setShowClaimModal(false);
+                  setClaimCode("");
+                } finally {
+                  setClaimLoading(false);
+                }
+              }}
+              disabled={claimLoading || !claimCode}
+              className="pixel-btn w-full bg-green-600 hover:bg-green-500 text-green-100 py-3 font-pixel text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {claimLoading ? "MEMPROSES..." : "KLAIM SEKARANG!"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ═══ Bottom Navigation Bar ═══ */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 border-t-2 border-green-900/40 backdrop-blur-lg">

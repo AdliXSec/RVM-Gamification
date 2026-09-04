@@ -68,6 +68,7 @@ interface AppState {
   register: (name: string, nim: string, email: string, pass: string, character: string) => Promise<boolean>;
   logout: () => void;
   adminAddBottles: (userId: string, machineId: string, bottles: number) => Promise<void>;
+  claimReceipt: (code: string) => Promise<void>;
   setMachineMaxCapacity: (max: number) => Promise<void>;
   addMachine: (name: string, location: string, maxCapacity: number) => Promise<void>;
   deleteMachine: (id: string) => Promise<void>;
@@ -315,6 +316,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const claimReceipt = async (code: string) => {
+    try {
+      const res = await api.post(`/receipts/claim`, { claim_code: code });
+      toast.success(res.data.message || `Klaim berhasil!`);
+      const sfx = new Audio('/sound/levelup.mp3');
+      sfx.volume = 0.5;
+      sfx.play().catch(()=>{});
+      refreshData();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Gagal klaim struk.");
+      throw err;
+    }
+  };
+
   const acceptTicket = async (ticketId: string) => {
     try {
       await api.patch(`/tickets/${ticketId}/accept`);
@@ -420,7 +435,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppContext.Provider value={{ 
       currentUser, users, students, machine, tickets, stats, rewards, redemptions, allLogs, notifications, machines, faqs, guides,
-      login, register, logout, adminAddBottles, setMachineMaxCapacity, 
+      login, register, logout, adminAddBottles, claimReceipt, setMachineMaxCapacity, 
       acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward, addFaq, updateFaq, deleteFaq, addGuide, updateGuide, deleteGuide, refreshData, setActiveMachine, addMachine, deleteMachine, settings, updateSetting, theme, toggleTheme 
     }}>
       {children}

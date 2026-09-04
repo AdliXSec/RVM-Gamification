@@ -59,6 +59,26 @@ class MachineController extends Controller
         ], 'Penyetoran berhasil.');
     }
 
+    public function iotDeposit(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'machine_id' => 'required|exists:machines,id',
+            'bottles' => 'required|integer|min:1',
+            'claim_code' => 'required|string|unique:receipts,claim_code',
+        ]);
+
+        $machine = Machine::findOrFail($data['machine_id']);
+        
+        // Simpan struk & update botol menggunakan MachineService
+        $receipt = $this->machineService->iotDeposit($machine, (int) $data['bottles'], $data['claim_code']);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Deposit IoT berhasil dicatat',
+            'receipt' => $receipt
+        ]);
+    }
+
     public function updateCapacity(UpdateCapacityRequest $request, Machine $machine): JsonResponse
     {
         $updated = $this->machineService->updateCapacity(

@@ -77,6 +77,58 @@ class MachineService
         });
     }
 
+    public function iotDeposit(Machine $machine, int $bottles, string $claimCode): \App\Models\Receipt
+    {
+        return DB::transaction(function () use ($machine, $bottles, $claimCode) {
+            $lockedMachine = Machine::lockForUpdate()->findOrFail($machine->id);
+
+            // Kita biarkan IoT menambah botol meskipun di sistem statusnya full,
+            // Karena jika mesin fisik menerima botol, berarti secara fisik belum full atau sudah dikosongkan tanpa konfirmasi app.
+            $actualBottles = $bottles;
+
+            $newBottles = $lockedMachine->current_bottles + $actualBottles;
+            $isFull = $newBottles >= $lockedMachine->max_capacity;
+
+            $lockedMachine->update([
+                'current_bottles' => min($newBottles, $lockedMachine->max_capacity),
+                'status' => $isFull ? 'full' : 'online',
+            ]);
+
+            $xpPerBottle = (int) Cache::rememberForever('settings.all', function () {
+                return Setting::pluck('value', 'key')->toArray();
+            })['xp_per_bottle'] ?? 100;
+            $xp = $actualBottles * $xpPerBottle;
+
+            $receipt = \App\Models\Receipt::create([
+                'claim_code' => $claimCode,
+                'machine_id' => $machine->id,
+                'bottles_count' => $actualBottles,
+                'xp_value' => $xp,
+                'is_claimed' => false,
+                'expires_at' => now()->addDays(7),
+            ]);
+
+            // Invalidate caches
+            Cache::forget('campus_stats');
+
+            // Auto-create ticket if >= 80%
+            $percentage = round(($newBottles / $lockedMachine->max_capacity) * 100);
+            if ($percentage >= 80) {
+                $existingActive = PickUpTicket::where('machine_id', $machine->id)->active()->exists();
+                if (!$existingActive) {
+                    PickUpTicket::create([
+                        'ticket_code' => PickUpTicket::generateCode(),
+                        'machine_id' => $machine->id,
+                        'capacity_at_issue' => $newBottles,
+                        'status' => 'pending',
+                    ]);
+                }
+            }
+
+            return $receipt;
+        });
+    }
+
     public function updateCapacity(Machine $machine, int $maxCapacity): Machine
     {
         $machine->update(['max_capacity' => $maxCapacity]);

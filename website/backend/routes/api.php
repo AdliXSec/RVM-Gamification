@@ -31,6 +31,7 @@ Route::prefix('v1')->group(function () {
     Route::get('faqs', [\App\Http\Controllers\Api\V1\FaqController::class, 'index']);
     Route::get('guides', [\App\Http\Controllers\Api\V1\GuideController::class, 'index']);
     Route::get('notifications', [\App\Http\Controllers\Api\V1\NotificationController::class, 'index']);
+    Route::post('iot/deposit', [MachineController::class, 'iotDeposit']);
 
     // ─── Authenticated ───────────────────────────────────────────
     Route::middleware('auth:api')->group(function () {
@@ -41,9 +42,11 @@ Route::prefix('v1')->group(function () {
         Route::post('auth/refresh', [AuthController::class, 'refresh']);
 
         // Settings
-        
         Route::post('settings', [SettingController::class, 'update'])->middleware('role:admin');
         
+        // Receipts (Claiming points from RVM machine)
+        Route::post('receipts/claim', [\App\Http\Controllers\Api\V1\ReceiptController::class, 'claim']);
+
         // CMS (FAQ & Guides)
         Route::post('faqs', [\App\Http\Controllers\Api\V1\FaqController::class, 'store'])->middleware('role:admin');
         Route::patch('faqs/{faq}', [\App\Http\Controllers\Api\V1\FaqController::class, 'update'])->middleware('role:admin');
