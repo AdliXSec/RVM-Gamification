@@ -20,7 +20,7 @@ export default function Dashboard() {
   const [tab, setTab] = useState<'home' | 'rank' | 'shop' | 'log' | 'quest' | 'info'>('home');
   
   // Background Music State
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [volume, setVolume] = useState(0.2);
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
