@@ -185,14 +185,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const token = localStorage.getItem('token');
-      if (token && currentUser) {
-         if (currentUser.role === 'admin' || currentUser.role === 'officer') {
+      if (token) {
+         const me = await api.get('/auth/me');
+         const activeUser = me.data?.user;
+         
+         if (activeUser && (activeUser.role === 'admin' || activeUser.role === 'officer')) {
             const tRes = await api.get('/tickets');
             if (tRes.data?.tickets) setTickets(tRes.data.tickets.map((t: any) => ({
               id: t.id, machineName: t.machine?.name || 'RVM', capacityAtIssue: t.capacity_at_issue, status: t.status === 'pending' ? 'Pending' : (t.status === 'accepted' ? 'Accepted' : 'Completed'), date: t.created_at
             })));
 
-            if (currentUser.role === 'admin') {
+            if (activeUser.role === 'admin') {
               const pendRes = await api.get('/rewards/redemptions/pending');
               if (pendRes.data?.redemptions) setRedemptions(pendRes.data.redemptions);
               const studRes = await api.get('/users/students');
@@ -210,8 +213,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
              id: tx.id, date: tx.created_at, type: tx.type, amount: tx.amount, desc: tx.description, status: tx.status
          })) : [];
          
-         const me = await api.get('/auth/me');
-         if (me.data?.user) setCurrentUser({ ...me.data.user, history });
+         if (activeUser) setCurrentUser({ ...activeUser, history });
       }
     } catch (err) {
       console.error("Auth data err:", err);
