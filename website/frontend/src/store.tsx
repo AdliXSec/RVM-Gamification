@@ -236,8 +236,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
     init();
     
-    // Poll data every 10s
-    const interval = setInterval(refreshData, 10000);
+    // Poll data every 3s for realtime feel
+    const interval = setInterval(refreshData, 3000);
     return () => clearInterval(interval);
   }, []);
 
