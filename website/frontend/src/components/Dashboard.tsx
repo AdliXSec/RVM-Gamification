@@ -245,7 +245,7 @@ export default function Dashboard() {
           />
         </div>
       </header>
-      <main className="flex-1 w-full max-w-4xl mx-auto px-3 md:px-6 pt-28 md:pt-32 pb-24 relative z-10">
+      <main className="flex-1 w-full max-w-4xl mx-auto px-3 md:px-6 pt-28 md:pt-30 pb-24 relative z-10">
 
         {/* ═══ TAB: HOME / BASE CAMP ═══ */}
         {tab === 'home' && (

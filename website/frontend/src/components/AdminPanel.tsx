@@ -84,6 +84,28 @@ export default function AdminPanel() {
   const [newGuideDesc, setNewGuideDesc] = useState('');
   const [newGuideIcon, setNewGuideIcon] = useState('check');
 
+  // Search States
+  const [searchRedemptions, setSearchRedemptions] = useState('');
+  const [searchMachines, setSearchMachines] = useState('');
+  const [searchStudents, setSearchStudents] = useState('');
+
+  // Derived filtered lists
+  const filteredRedemptions = redemptions.filter((req: any) => 
+    req.user?.name.toLowerCase().includes(searchRedemptions.toLowerCase()) || 
+    req.user?.nim?.toLowerCase().includes(searchRedemptions.toLowerCase()) ||
+    req.reward?.name.toLowerCase().includes(searchRedemptions.toLowerCase())
+  );
+
+  const filteredMachines = machines.filter((m: any) => 
+    m.name.toLowerCase().includes(searchMachines.toLowerCase()) || 
+    m.location?.toLowerCase().includes(searchMachines.toLowerCase())
+  );
+
+  const filteredStudents = students.filter((s: any) => 
+    s.name.toLowerCase().includes(searchStudents.toLowerCase()) || 
+    s.nim?.toLowerCase().includes(searchStudents.toLowerCase())
+  );
+
   // Handlers
   const handleAddBottles = (e: React.FormEvent) => {
     e.preventDefault();
@@ -359,17 +381,21 @@ export default function AdminPanel() {
                   <form onSubmit={handleAddBottles} className="space-y-3">
                     <div>
                       <label className="font-pixel text-[8px] text-slate-500 block mb-1">LOKASI MESIN</label>
+                      <input type="text" placeholder="Cari mesin..." className="pixel-input w-full px-3 py-1.5 text-xs mb-2 bg-slate-800/80" 
+                        value={searchMachines} onChange={e => setSearchMachines(e.target.value)} />
                       <select className="pixel-input w-full px-3 py-2.5 text-sm" value={depositMachineId}
                         onChange={e => setDepositMachineId(e.target.value)} required>
-                        {machines.map((m: any) => <option key={m.id} value={m.id}>{m.name} ({m.location})</option>)}
+                        {filteredMachines.map((m: any) => <option key={m.id} value={m.id}>{m.name} ({m.location})</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="font-pixel text-[8px] text-slate-500 block mb-1">PILIH MAHASISWA</label>
+                      <input type="text" placeholder="Cari nama atau NIM..." className="pixel-input w-full px-3 py-1.5 text-xs mb-2 bg-slate-800/80" 
+                        value={searchStudents} onChange={e => setSearchStudents(e.target.value)} />
                       <select className="pixel-input w-full px-3 py-2.5 text-sm" value={selectedUser}
                         onChange={e => setSelectedUser(e.target.value)} required>
                         <option value="">— Pilih Mahasiswa —</option>
-                        {students.map(u => <option key={u.id} value={u.id}>{u.name} (NIM: {u.nim})</option>)}
+                        {filteredStudents.map((u: any) => <option key={u.id} value={u.id}>{u.name} (NIM: {u.nim})</option>)}
                       </select>
                     </div>
                     <div>
@@ -476,11 +502,24 @@ export default function AdminPanel() {
                   <SectionTitle icon={<Gift className="w-4 h-4 text-purple-400" />}>
                     PERMINTAAN TUKAR REWARD {pendingRedemptions > 0 && <span className="text-purple-400 ml-1">({pendingRedemptions})</span>}
                   </SectionTitle>
-                  {redemptions.length === 0 ? (
+                  
+                  {redemptions.length > 0 && (
+                    <div className="mb-4">
+                      <input 
+                        type="text" 
+                        placeholder="Cari nama, NIM, atau nama hadiah..." 
+                        className="pixel-input w-full px-3 py-2 text-xs"
+                        value={searchRedemptions}
+                        onChange={(e) => setSearchRedemptions(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  {filteredRedemptions.length === 0 ? (
                     <EmptyState icon={<Gift />} text="TIDAK ADA PERMINTAAN TUKAR" />
                   ) : (
                     <div className="space-y-3">
-                      {redemptions.map((req: any, i: number) => (
+                      {filteredRedemptions.map((req: any, i: number) => (
                         <div key={i} className="bg-slate-800/50 border-l-2 border-purple-500 p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
                           <div>
                             <span className="font-pixel text-[9px] text-purple-300">{req.user?.name} (NIM: {req.user?.nim})</span>
