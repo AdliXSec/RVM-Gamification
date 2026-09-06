@@ -21,8 +21,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # 3. Aktifkan modul rewrite Apache dan pastikan MPM yang aktif hanya mpm_prefork
-RUN a2dismod mpm_event mpm_worker || true
-RUN a2enmod mpm_prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.load && a2enmod mpm_prefork || true
 RUN a2enmod rewrite
 
 # 4. Ubah Document Root Apache agar mengarah ke folder /public milik Laravel
