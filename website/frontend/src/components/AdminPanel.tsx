@@ -57,7 +57,7 @@ export default function AdminPanel() {
     machine, machines, setActiveMachine, tickets, students, rewards, allLogs, logout,
     adminAddBottles, acceptTicket, completeTicket, updateRewardStatus, addReward, deleteReward,
     setMachineMaxCapacity, addMachine, deleteMachine, settings, updateSetting,
-    faqs, guides, addFaq, deleteFaq, addGuide, deleteGuide
+    faqs, guides, addFaq, deleteFaq, addGuide, deleteGuide, loadingTasks
   } = useAppStore();
   const redemptions = useAppStore().redemptions || [];
 
@@ -264,8 +264,8 @@ export default function AdminPanel() {
                     <input type="number" className="pixel-input w-full px-3 py-2.5 text-sm" placeholder="100"
                       value={editXpConfig} onChange={e => setEditXpConfig(e.target.value)} required />
                   </div>
-                  <button type="submit" className="pixel-btn bg-yellow-700 hover:bg-yellow-600 text-yellow-100 py-2.5 px-8 font-pixel text-[9px]">
-                    SIMPAN
+                  <button type="submit" disabled={loadingTasks['updateSetting']} className="pixel-btn bg-yellow-700 hover:bg-yellow-600 text-yellow-100 py-2.5 px-8 font-pixel text-[9px] disabled:opacity-50 disabled:cursor-not-allowed">
+                    {loadingTasks['updateSetting'] ? 'LOADING...' : 'SIMPAN'}
                   </button>
                 </form>
               </Card>
@@ -307,9 +307,9 @@ export default function AdminPanel() {
                         <input type="number" className="pixel-input w-full px-2 py-2 text-sm" value={editCapacity}
                           onChange={e => setEditCapacity(e.target.value)} min="10" />
                       </div>
-                      <button onClick={handleUpdateCapacity}
-                        className="pixel-btn bg-cyan-700 hover:bg-cyan-600 text-cyan-100 py-2 px-5 font-pixel text-[8px]">
-                        UPDATE
+                      <button onClick={handleUpdateCapacity} disabled={loadingTasks['setMachineMaxCapacity']}
+                        className="pixel-btn bg-cyan-700 hover:bg-cyan-600 text-cyan-100 py-2 px-5 font-pixel text-[8px] disabled:opacity-50 disabled:cursor-not-allowed">
+                        {loadingTasks['setMachineMaxCapacity'] ? 'LOADING' : 'UPDATE'}
                       </button>
                     </div>
                   </div>
@@ -338,8 +338,8 @@ export default function AdminPanel() {
                       <input type="number" className="pixel-input w-full px-3 py-2.5 text-sm" placeholder="250"
                         value={newMachCap} onChange={e => setNewMachCap(e.target.value)} required />
                     </div>
-                    <button type="submit" className="pixel-btn bg-green-700 hover:bg-green-600 text-green-100 w-full py-3 font-pixel text-[9px]">
-                      <Plus className="w-3 h-3 inline mr-1" /> TAMBAH MESIN
+                    <button type="submit" disabled={loadingTasks['addMachine']} className="pixel-btn bg-green-700 hover:bg-green-600 text-green-100 w-full py-3 font-pixel text-[9px] disabled:opacity-50 disabled:cursor-not-allowed">
+                      <Plus className="w-3 h-3 inline mr-1" /> {loadingTasks['addMachine'] ? 'LOADING...' : 'TAMBAH MESIN'}
                     </button>
                   </form>
                 </Card>
@@ -403,9 +403,9 @@ export default function AdminPanel() {
                       <input type="number" className="pixel-input w-full px-3 py-2.5 text-sm" min="1" max="100"
                         value={bottleAmount} onChange={e => setBottleAmount(e.target.value)} required />
                     </div>
-                    <button type="submit" className="pixel-btn bg-blue-700 hover:bg-blue-600 text-blue-100 w-full py-3 font-pixel text-[9px]"
-                      disabled={machine.currentBottles >= machine.maxCapacity || machine.status === 'Maintenance'}>
-                      PROSES SETOR
+                    <button type="submit" className="pixel-btn bg-blue-700 hover:bg-blue-600 text-blue-100 w-full py-3 font-pixel text-[9px] disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={machine.currentBottles >= machine.maxCapacity || machine.status === 'Maintenance' || loadingTasks['adminAddBottles']}>
+                      {loadingTasks['adminAddBottles'] ? 'LOADING...' : 'PROSES SETOR'}
                     </button>
                   </form>
                 </Card>
@@ -428,14 +428,14 @@ export default function AdminPanel() {
                             <p className="font-pixel-body text-slate-500 text-sm">Kapasitas: {ticket.capacityAtIssue}% • {ticket.date}</p>
                           </div>
                           {ticket.status === 'Pending' ? (
-                            <button onClick={() => acceptTicket(ticket.id)}
-                              className="pixel-btn bg-orange-700 hover:bg-orange-600 text-orange-100 w-full py-2.5 font-pixel text-[9px]">
-                              ACCEPT TASK
+                            <button onClick={() => acceptTicket(ticket.id)} disabled={loadingTasks[`acceptTicket_${ticket.id}`]}
+                              className="pixel-btn bg-orange-700 hover:bg-orange-600 text-orange-100 w-full py-2.5 font-pixel text-[9px] disabled:opacity-50 disabled:cursor-not-allowed">
+                              {loadingTasks[`acceptTicket_${ticket.id}`] ? 'LOADING...' : 'ACCEPT TASK'}
                             </button>
                           ) : (
-                            <button onClick={() => completeTicket(ticket.id)}
-                              className="pixel-btn bg-green-700 hover:bg-green-600 text-green-100 w-full py-2.5 font-pixel text-[9px]">
-                              TASK COMPLETE
+                            <button onClick={() => completeTicket(ticket.id)} disabled={loadingTasks[`completeTicket_${ticket.id}`]}
+                              className="pixel-btn bg-green-700 hover:bg-green-600 text-green-100 w-full py-2.5 font-pixel text-[9px] disabled:opacity-50 disabled:cursor-not-allowed">
+                              {loadingTasks[`completeTicket_${ticket.id}`] ? 'LOADING...' : 'TASK COMPLETE'}
                             </button>
                           )}
                         </div>

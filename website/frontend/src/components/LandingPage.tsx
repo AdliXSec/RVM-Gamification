@@ -154,7 +154,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 selection:bg-green-500/30 font-pixel-body">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 selection:bg-green-500/30 font-pixel-body">
       
       {/* Navbar - Light Theme */}
       <nav className="fixed top-0 w-full p-4 md:px-8 flex justify-between items-center z-50 bg-slate-100 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
@@ -265,7 +265,7 @@ export default function LandingPage() {
       </div>
 
       {/* Image Sequence Showcase Section */}
-      <section ref={videoSectionRef} className="bg-slate-100 dark:bg-slate-800 relative z-10 border-b-4 border-slate-300 dark:border-slate-600 h-[400vh]">
+      <section ref={videoSectionRef} className="bg-slate-100 dark:bg-slate-800 relative z-50 border-b-4 border-slate-300 dark:border-slate-600 h-[400vh]">
         <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden px-4 py-8">
           <div className="absolute top-0 right-0 w-96 h-96 bg-green-400/10 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-400/10 blur-[120px] rounded-full pointer-events-none" />
@@ -284,41 +284,41 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              <div className={`transition-all duration-700 ${activeStep >= 0 && activeStep < displayGuides.length ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10 absolute pointer-events-none'}`}>
-                <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-sm md:text-xl flex items-center gap-2 border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4 lg:mb-8">
+              <div className={`transition-all duration-700 w-full overflow-y-auto max-h-[50vh] lg:max-h-full pr-2 ${activeStep >= 0 && activeStep < displayGuides.length ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10 absolute pointer-events-none'}`}>
+                <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-sm md:text-xl flex items-center gap-2 border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4 lg:mb-6">
                   <Activity className="w-4 h-4 text-green-600" /> PANDUAN PENGGUNAAN
                 </h3>
-                <div className="space-y-6">
+                <div className="space-y-3 md:space-y-4">
                   {displayGuides.map((s:any, index:number) => (
                     <div 
                       key={index} 
-                      className={`p-4 pixel-border gap-4 items-start transition-all duration-500 ${
+                      className={`p-3 md:p-4 pixel-border gap-3 md:gap-4 items-start transition-all duration-500 ${
                         activeStep === index 
                           ? 'flex bg-green-50 dark:bg-green-900/40 border-green-500 scale-105 shadow-[0_4px_15px_rgba(34,197,94,0.15)]' 
                           : 'hidden md:flex bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 opacity-50 scale-95'
                       }`}
                     >
-                      <span className={`font-pixel text-3xl md:text-4xl ${activeStep === index ? 'text-green-600' : 'text-slate-400'}`}>{s.step_number}</span>
+                      <span className={`font-pixel text-2xl md:text-4xl ${activeStep === index ? 'text-green-600' : 'text-slate-400'}`}>{s.step_number}</span>
                       <div>
-                        <h4 className="font-pixel text-slate-800 dark:text-slate-100 text-sm md:text-base mb-2">{s.title}</h4>
-                        <p className="font-pixel-body text-slate-600 dark:text-slate-300 text-sm md:text-base">{s.description}</p>
+                        <h4 className="font-pixel text-slate-800 dark:text-slate-100 text-xs md:text-base mb-1 md:mb-2">{s.title}</h4>
+                        <p className="font-pixel-body text-slate-600 dark:text-slate-300 text-[10px] md:text-sm">{s.description}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className={`transition-all duration-700 ${activeStep === displayGuides.length ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 absolute pointer-events-none'}`}>
-                <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-lg md:text-xl flex items-center gap-2 border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-8">
+              <div className={`transition-all duration-700 w-full overflow-y-auto max-h-[50vh] lg:max-h-full pr-2 ${activeStep === displayGuides.length ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 absolute pointer-events-none'}`}>
+                <h3 className="font-pixel text-slate-800 dark:text-slate-100 text-base md:text-lg flex items-center gap-2 border-b-2 border-slate-200 dark:border-slate-700 pb-2 mb-4">
                   <Star className="w-4 h-4 text-amber-500" /> MANFAAT SYSTEM
                 </h3>
-                <ul className="space-y-6 font-pixel-body text-slate-700 dark:text-slate-200">
+                <ul className="space-y-3 md:space-y-5 font-pixel-body text-slate-700 dark:text-slate-200">
                   {MANFAAT_SYSTEM.map((m, idx) => (
-                    <li key={idx} className="flex items-start gap-4 bg-slate-50 dark:bg-slate-900 p-6 pixel-border border-slate-300 dark:border-slate-600 shadow-lg">
-                      <m.Icon className={`w-8 h-8 shrink-0 mt-0.5 ${m.iconColor} ${m.animClass}`} />
+                    <li key={idx} className="flex items-start gap-3 md:gap-4 bg-slate-50 dark:bg-slate-900 p-3 md:p-5 pixel-border border-slate-300 dark:border-slate-600 shadow-md">
+                      <m.Icon className={`w-6 h-6 md:w-8 md:h-8 shrink-0 mt-0.5 ${m.iconColor} ${m.animClass}`} />
                       <div>
-                        <strong className={`block font-pixel text-sm md:text-base mb-2 ${m.colorText}`}>{m.title}</strong>
-                        <p className="font-pixel-body text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed">
+                        <strong className={`block font-pixel text-xs md:text-sm mb-1 md:mb-2 ${m.colorText}`}>{m.title}</strong>
+                        <p className="font-pixel-body text-slate-600 dark:text-slate-300 text-xs md:text-sm leading-relaxed">
                           {m.desc}
                         </p>
                       </div>
@@ -349,10 +349,10 @@ export default function LandingPage() {
 
           </div>
         </div>
+      <div className="z-10 mt-20 md:mt-0"></div>
       </section>
-
                   {/* Production Info Section */}
-      <section className="bg-white dark:bg-slate-900 border-b-4 border-slate-200 dark:border-slate-700 px-4 pt-32 md:pt-24 pb-20 relative z-10 mt-16 md:mt-0">
+      <section className="bg-white dark:bg-slate-900 border-b-4 border-slate-200 dark:border-slate-700 px-4 pt-32 md:pt-24 pb-20 relative z-10">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="font-pixel text-green-700 dark:text-green-500 text-3xl md:text-4xl mb-6">INTEGRASI SISTEM IoT</h2>

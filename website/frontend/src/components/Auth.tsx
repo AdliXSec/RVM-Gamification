@@ -8,7 +8,7 @@ const CHARACTERS = [
 ];
 
 export default function Auth({ mode }: { mode: 'login' | 'register' }) {
-  const { login, register, theme, toggleTheme } = useAppStore();
+  const { login, register, theme, toggleTheme, loadingTasks } = useAppStore();
   const navigate = useNavigate();
   const [tab, setTab] = useState<'student' | 'admin'>(mode === 'login' ? 'student' : 'student');
   const [name, setName] = useState('');
@@ -89,7 +89,9 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
                     <label className="font-pixel text-[8px] text-slate-500 dark:text-slate-400">PASSWORD</label>
                     <input className="pixel-input w-full px-3 py-2" type="password" placeholder="***" value={password} onChange={e => setPassword(e.target.value)} required />
                   </div>
-                  <button type="submit" className="pixel-btn bg-green-700 hover:bg-green-600 text-green-100 w-full py-3">MASUK</button>
+                  <button type="submit" disabled={loadingTasks['login']} className="pixel-btn bg-green-700 hover:bg-green-600 text-green-100 w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {loadingTasks['login'] ? 'LOADING...' : 'MASUK'}
+                  </button>
                   <p className="text-center font-pixel-body text-slate-600 dark:text-slate-400 text-base">
                     Belum punya akun? <Link to="/register" className="text-green-400 hover:text-green-300 font-pixel text-[8px]">DAFTAR</Link>
                   </p>
@@ -104,9 +106,9 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
                     <label className="font-pixel text-[8px] text-slate-500 dark:text-slate-400">PASSWORD</label>
                     <input className="pixel-input w-full px-3 py-2" type="password" placeholder="***" value={password} onChange={e => setPassword(e.target.value)} required />
                   </div>
-                  <button type="submit" className="pixel-btn bg-slate-700 hover:bg-slate-600 text-slate-200 w-full py-3"
+                  <button type="submit" disabled={loadingTasks['login']} className="pixel-btn bg-slate-700 hover:bg-slate-600 text-slate-200 w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{boxShadow: '4px 4px 0 0 rgba(0,0,0,0.4), 4px 0 0 0 hsl(220,10%,25%), -4px 0 0 0 hsl(220,10%,25%), 0 4px 0 0 hsl(220,10%,25%), 0 -4px 0 0 hsl(220,10%,25%)'}}>
-                    LOGIN ADMIN
+                    {loadingTasks['login'] ? 'LOADING...' : 'LOGIN ADMIN'}
                   </button>
                 </form>
               )}
@@ -147,9 +149,9 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
                 </div>
               </div>
               
-              <button type="submit" className="pixel-btn bg-blue-700 hover:bg-blue-600 text-blue-100 w-full py-3 mt-4"
+              <button type="submit" disabled={loadingTasks['register']} className="pixel-btn bg-blue-700 hover:bg-blue-600 text-blue-100 w-full py-3 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{boxShadow: '4px 4px 0 0 rgba(0,0,0,0.4), 4px 0 0 0 hsl(220,50%,25%), -4px 0 0 0 hsl(220,50%,25%), 0 4px 0 0 hsl(220,50%,25%), 0 -4px 0 0 hsl(220,50%,25%)'}}>
-                DAFTAR
+                {loadingTasks['register'] ? 'LOADING...' : 'DAFTAR'}
               </button>
               <p className="text-center font-pixel-body text-slate-600 dark:text-slate-400 text-base">
                 Sudah punya akun? <Link to="/login" className="text-green-400 hover:text-green-300 font-pixel text-[8px]">MASUK</Link>

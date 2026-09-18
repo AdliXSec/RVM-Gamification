@@ -1,5 +1,27 @@
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
+/**
+ * Extract the most useful error message from a Laravel API error response.
+ * Priority: specific validation errors > top-level message > fallback.
+ *
+ * Laravel validation response format:
+ *   { success: false, message: "Validasi gagal.", errors: { email: ["Email sudah terdaftar."] } }
+ */
+function extractErrorMessage(data: any): string {
+  if (!data) return 'Terjadi kesalahan pada server.';
+
+  // If there are specific validation errors, join them into a readable string
+  if (data.errors && typeof data.errors === 'object') {
+    const messages = Object.values(data.errors).flat() as string[];
+    if (messages.length > 0) return messages.join(' ');
+  }
+
+  // Fallback to the top-level message (but skip the generic "Validasi gagal.")
+  if (data.message && data.message !== 'Validasi gagal.') return data.message;
+
+  return 'Terjadi kesalahan. Silakan coba lagi.';
+}
+
 async function fetchApi(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem('token');
   const headers = {
@@ -27,13 +49,13 @@ async function fetchApi(endpoint: string, options: RequestInit = {}) {
 
   if (!response.ok) {
     if (response.status === 401) {
+      // Only clear the token — do NOT do a full page reload.
+      // React's ProtectedRoute will handle the redirect gracefully
+      // without destroying the entire application state.
       localStorage.removeItem('token');
-      // If we are in the browser, optionally reload or redirect
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login') && !window.location.pathname.includes('/register') && window.location.pathname !== '/') {
-        window.location.href = '/login';
-      }
     }
-    const error: any = new Error(data?.message || 'API Error');
+
+    const error: any = new Error(extractErrorMessage(data));
     error.response = { data };
     error.status = response.status;
     throw error;

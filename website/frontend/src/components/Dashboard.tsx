@@ -17,13 +17,12 @@ function getRewardTier(cost: number) {
 }
 
 export default function Dashboard() {
-  const { currentUser, users, stats, machines, rewards, logout, redeemReward, claimReceipt, settings, notifications, guides } = useAppStore();
+  const { currentUser, users, stats, machines, rewards, logout, redeemReward, claimReceipt, settings, notifications, guides, loadingTasks } = useAppStore();
   const [tab, setTab] = useState<'home' | 'rank' | 'shop' | 'log' | 'quest' | 'info'>('home');
   
   // Claim Receipt State
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [claimCode, setClaimCode] = useState('');
-  const [claimLoading, setClaimLoading] = useState(false);
 
   // Background Music State
   const [isMuted, setIsMuted] = useState(false);
@@ -466,14 +465,16 @@ export default function Dashboard() {
                         </div>
                         <button
                           className={`w-full py-2.5 md:py-4 font-pixel text-[8px] md:text-xs transition-all ${
-                            canAfford
+                            canAfford && !loadingTasks[`redeemReward_${item.id}`]
                               ? `pixel-btn bg-green-700 hover:bg-green-600 text-green-100`
                               : 'bg-slate-800 text-slate-600 cursor-not-allowed border border-slate-700'
                           }`}
-                          disabled={!canAfford}
+                          disabled={!canAfford || loadingTasks[`redeemReward_${item.id}`]}
                           onClick={() => handleRedeemClick(item.cost, item.id)}
                         >
-                          {canAfford ? (
+                          {loadingTasks[`redeemReward_${item.id}`] ? (
+                            <span className="flex items-center justify-center gap-1 md:gap-2">LOADING...</span>
+                          ) : canAfford ? (
                             <span className="flex items-center justify-center gap-1 md:gap-2"><ShoppingBag className="w-3 h-3 md:w-5 md:h-5" /> TUKAR</span>
                           ) : (
                             <span className="flex items-center justify-center gap-1 md:gap-2"><Lock className="w-3 h-3 md:w-5 md:h-5" /> LOCKED</span>
@@ -805,21 +806,18 @@ export default function Dashboard() {
             <button 
               onClick={async () => {
                 if(!claimCode) return;
-                setClaimLoading(true);
                 try {
                   await claimReceipt(claimCode);
                   setShowClaimModal(false);
                   setClaimCode("");
-                } finally {
-                  setClaimLoading(false);
-                }
+                } catch(e) {}
               }}
-              disabled={claimLoading || !claimCode}
+              disabled={loadingTasks['claimReceipt'] || !claimCode}
               className="pixel-btn w-full bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-600 hover:to-emerald-500 text-green-100 py-4 font-pixel text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed border-2 border-green-400/50 shadow-[0_0_20px_rgba(74,222,128,0.3)] relative overflow-hidden group"
             >
               <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
               <span className="relative z-10 flex items-center justify-center gap-2">
-                {claimLoading ? 'MEMPROSES...' : <><Zap className="w-5 h-5 text-yellow-400" /> KLAIM SEKARANG</>}
+                {loadingTasks['claimReceipt'] ? 'MEMPROSES...' : <><Zap className="w-5 h-5 text-yellow-400" /> KLAIM SEKARANG</>}
               </span>
             </button>
           </div>

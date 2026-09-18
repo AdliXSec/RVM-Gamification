@@ -1,0 +1,120 @@
+{
+  "DirectAdmin (rvmapi.cu.ma)": {
+    "dns_avg_ms": 6.14,
+    "tls_avg_ms": 311.4,
+    "endpoints": {
+      "Notifikasi (Read)": {
+        "avg_ms": 5619.28,
+        "median_ms": 3338.89,
+        "success_rate": "8/10"
+      },
+      "Mesin RVM (Read)": {
+        "avg_ms": 2397.84,
+        "median_ms": 2309.94,
+        "success_rate": "10/10"
+      },
+      "Rewards (Read)": {
+        "avg_ms": 464.09,
+        "median_ms": 442.04,
+        "success_rate": "0/10"
+      },
+      "Panduan (Read)": {
+        "avg_ms": 2674.56,
+        "median_ms": 2506.01,
+        "success_rate": "10/10"
+      },
+      "FAQ (Read)": {
+        "avg_ms": 7692.77,
+        "median_ms": 3338.98,
+        "success_rate": "10/10"
+      },
+      "Settings (Read)": {
+        "avg_ms": 473.5,
+        "median_ms": 467.82,
+        "success_rate": "10/10"
+      }
+    },
+    "overall_latency_avg_ms": 3220.34,
+    "concurrency": {
+      "total_requests": 100,
+      "concurrency": 20,
+      "wall_time_s": 31.3,
+      "rps": 3.2,
+      "success": 100,
+      "fail": 0,
+      "avg_ms": 5778.87,
+      "median_ms": 5569.03,
+      "p95_ms": 8616.85,
+      "p99_ms": 9044.61,
+      "min_ms": 3733.86,
+      "max_ms": 9044.61
+    },
+    "iot_burst": {
+      "burst_count": 15,
+      "avg_ms": 1092.15,
+      "median_ms": 1046.34,
+      "min_ms": 878.93,
+      "max_ms": 1614.9,
+      "note": "Status 422 = expected (mesin benchmark tidak terdaftar)"
+    }
+  },
+  "cPanel (rvm.phissimulation.my.id)": {
+    "dns_avg_ms": 5.35,
+    "tls_avg_ms": 107.71,
+    "endpoints": {
+      "Notifikasi (Read)": {
+        "avg_ms": 219.28,
+        "median_ms": 81.98,
+        "success_rate": "10/10"
+      },
+      "Mesin RVM (Read)": {
+        "avg_ms": 312.05,
+        "median_ms": 145.87,
+        "success_rate": "10/10"
+      },
+      "Rewards (Read)": {
+        "avg_ms": 281.43,
+        "median_ms": 214.9,
+        "success_rate": "0/10"
+      },
+      "Panduan (Read)": {
+        "avg_ms": 221.47,
+        "median_ms": 48.13,
+        "success_rate": "10/10"
+      },
+      "FAQ (Read)": {
+        "avg_ms": 190.97,
+        "median_ms": 56.79,
+        "success_rate": "10/10"
+      },
+      "Settings (Read)": {
+        "avg_ms": 200.49,
+        "median_ms": 48.35,
+        "success_rate": "10/10"
+      }
+    },
+    "overall_latency_avg_ms": 237.62,
+    "concurrency": {
+      "total_requests": 100,
+      "concurrency": 20,
+      "wall_time_s": 8.6,
+      "rps": 0.81,
+      "success": 7,
+      "fail": 93,
+      "avg_ms": 712.55,
+      "median_ms": 785.71,
+      "p95_ms": 1069.5,
+      "p99_ms": 1069.5,
+      "min_ms": 69.23,
+      "max_ms": 1069.5
+    },
+    "iot_burst": {
+      "burst_count": 15,
+      "avg_ms": null,
+      "median_ms": null,
+      "min_ms": null,
+      "max_ms": null,
+      "note": "Status 422 = expected (mesin benchmark tidak terdaftar)"
+    }
+  }
+}

@@ -62,6 +62,7 @@ interface AppState {
   settings: Record<string, string>;
   updateSetting: (key: string, value: string) => Promise<void>;
   students: { id: string; name: string; nim: string }[];
+  loadingTasks: Record<string, boolean>;
   
   // Actions
   login: (email: string, pass: string) => Promise<boolean>;
@@ -84,6 +85,17 @@ interface AppState {
 const AppContext = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  const [loadingTasks, setLoadingTasks] = useState<Record<string, boolean>>({});
+
+  const withLoading = async <T,>(key: string, fn: () => Promise<T>): Promise<T> => {
+    setLoadingTasks(prev => ({ ...prev, [key]: true }));
+    try {
+      return await fn();
+    } finally {
+      setLoadingTasks(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]); // leaderboard
   const [students, setStudents] = useState<AppState['students']>([]);
@@ -141,83 +153,96 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const colors = ['bg-green-100 text-green-600', 'bg-rose-100 text-rose-600', 'bg-amber-100 text-amber-600', 'bg-cyan-100 text-cyan-600', 'bg-indigo-100 text-indigo-600'];
 
+  // Mutex to prevent concurrent refreshData() calls from overlapping.
+  // Without this, the 10s interval + useEffect triggers could fire simultaneously,
+  // causing duplicate requests and JWT race conditions.
+  let isRefreshing = false;
+
   const refreshData = async () => {
-    try {
-      const notifRes = await api.get('/notifications').catch(()=>null);
-      if (notifRes?.data?.notifications) setNotifications(notifRes.data.notifications);
-      
-      const setRes = await api.get('/settings').catch(()=>null);
-      const faqRes = await api.get('/faqs').catch(()=>null);
-      if (faqRes?.data?.faqs) setFaqs(faqRes.data.faqs);
-      const guideRes = await api.get('/guides').catch(()=>null);
-      if (guideRes?.data?.guides) setGuides(guideRes.data.guides);
-      if(setRes?.data?.settings) setSettings(setRes.data.settings);
-    } catch(e) { console.error('Settings err:', e); }
+    if (isRefreshing) return;
+    isRefreshing = true;
 
     try {
-      const ldRes = await api.get('/users/leaderboard');
-      if (ldRes.data?.leaderboard) setUsers(ldRes.data.leaderboard.map((u: any) => ({ ...u, history: [] })));
-    } catch(e) { console.error('Leaderboard err:', e); }
+      // ── Public data (no auth required) ──────────────────────────
+      await Promise.allSettled([
+        api.get('/notifications').then(res => { if (res?.data?.notifications) setNotifications(res.data.notifications); }).catch(e => console.error('Notif err', e)),
+        api.get('/settings').then(res => { if (res?.data?.settings) setSettings(res.data.settings); }).catch(e => console.error('Settings err', e)),
+        api.get('/faqs').then(res => { if (res?.data?.faqs) setFaqs(res.data.faqs); }).catch(e => console.error('FAQ err', e)),
+        api.get('/guides').then(res => { if (res?.data?.guides) setGuides(res.data.guides); }).catch(e => console.error('Guides err', e)),
+        api.get('/users/leaderboard').then(res => { if (res?.data?.leaderboard) setUsers(res.data.leaderboard.map((u: any) => ({ ...u, history: [] }))); }).catch(e => console.error('Leaderboard err', e)),
+        api.get('/users/campus-stats').then(res => { 
+          const st = res?.data?.stats;
+          if (st) setStats({ totalBottles: st.total_bottles, totalCO2: st.total_co2_saved, totalFilament: st.total_filament }); 
+        }).catch(e => console.error('Stats err', e)),
+        api.get('/machines').then(res => {
+          if (res?.data?.machines?.length > 0) {
+            setMachines(res.data.machines);
+            setMachine(prev => {
+              const match = res.data.machines.find((x: any) => x.id == prev.id) || res.data.machines[0];
+              if(!match) return prev;
+              return { id: match.id.toString(), maxCapacity: match.max_capacity, currentBottles: match.current_bottles, status: match.status === 'online' ? 'Online' : (match.status === 'full' ? 'Full' : 'Maintenance'), name: match.name, location: match.location };
+            });
+          }
+        }).catch(e => console.error('Machines err', e))
+      ]);
 
-    try {
-      const statRes = await api.get('/users/campus-stats');
-      const st = statRes.data?.stats;
-      if (st) setStats({ totalBottles: st.total_bottles, totalCO2: st.total_co2_saved, totalFilament: st.total_filament });
-    } catch(e) { console.error('Stats err:', e); }
-
-    try {
-      const mRes = await api.get('/machines');
-      if (mRes.data?.machines?.length > 0) {
-        setMachines(mRes.data.machines);
-        setMachine(prev => {
-          const match = mRes.data.machines.find((x: any) => x.id == prev.id) || mRes.data.machines[0];
-          if(!match) return prev;
-          return { id: match.id.toString(), maxCapacity: match.max_capacity, currentBottles: match.current_bottles, status: match.status === 'online' ? 'Online' : (match.status === 'full' ? 'Full' : 'Maintenance'), name: match.name, location: match.location };
-        });
-      }
-    } catch(e) { console.error('Machines err:', e); }
-
-    try {
-      const rRes = await api.get('/rewards');
-      if (rRes.data?.rewards) setRewards(rRes.data.rewards.map((r: any, i: number) => ({
-        id: r.id, name: r.name, cost: r.cost, desc: r.description || '', color: colors[i % colors.length]
-      })));
-    } catch(e) { console.error('Rewards err:', e); }
-
-    try {
+      // ── Authenticated data (only if token exists) ────────────────
       const token = localStorage.getItem('token');
-      if (token) {
-         const me = await api.get('/auth/me');
-         const activeUser = me.data?.user;
-         
-         if (activeUser && (activeUser.role === 'admin' || activeUser.role === 'officer')) {
-            const tRes = await api.get('/tickets');
-            if (tRes.data?.tickets) setTickets(tRes.data.tickets.map((t: any) => ({
-              id: t.id, machineName: t.machine?.name || 'RVM', capacityAtIssue: t.capacity_at_issue, status: t.status === 'pending' ? 'Pending' : (t.status === 'accepted' ? 'Accepted' : 'Completed'), date: t.created_at
-            })));
+      if (!token) return; // Skip all auth-required calls
+
+      try {
+        const [me, rRes, hRes] = await Promise.all([
+          api.get('/auth/me'),
+          api.get('/rewards').catch(() => null),
+          api.get('/users/history').catch(() => null)
+        ]);
+
+        if (rRes?.data?.rewards) setRewards(rRes.data.rewards.map((r: any, i: number) => ({
+          id: r.id, name: r.name, cost: r.cost, desc: r.description || '', color: colors[i % colors.length]
+        })));
+
+        const activeUser = me.data?.user;
+        const historyData = hRes?.data?.data || hRes?.data || [];
+        const history = Array.isArray(historyData) ? historyData.map((tx: any) => ({
+            id: tx.id, date: tx.created_at, type: tx.type, amount: tx.amount, desc: tx.description, status: tx.status
+        })) : [];
+
+        if (activeUser) setCurrentUser({ ...activeUser, history });
+        
+        if (activeUser && (activeUser.role === 'admin' || activeUser.role === 'officer')) {
+            const adminPromises: Promise<any>[] = [
+              api.get('/tickets').then(tRes => {
+                if (tRes?.data?.tickets) setTickets(tRes.data.tickets.map((t: any) => ({
+                  id: t.id, machineName: t.machine?.name || 'RVM', capacityAtIssue: t.capacity_at_issue, status: t.status === 'pending' ? 'Pending' : (t.status === 'accepted' ? 'Accepted' : 'Completed'), date: t.created_at
+                })));
+              }).catch(e => console.error('Tickets err', e))
+            ];
 
             if (activeUser.role === 'admin') {
-              const pendRes = await api.get('/rewards/redemptions/pending');
-              if (pendRes.data?.redemptions) setRedemptions(pendRes.data.redemptions);
-              const studRes = await api.get('/users/students');
-              if (studRes.data?.students) setStudents(studRes.data.students);
-
-              const logsRes = await api.get('/users/history/all');
-              const logsData = logsRes.data?.data || logsRes.data || [];
-              if (Array.isArray(logsData)) setAllLogs(logsData.map((tx: any) => ({ id: tx.id, date: tx.created_at, type: tx.type, amount: tx.amount, desc: tx.description, status: tx.status, user: tx.user })));
+              adminPromises.push(
+                api.get('/rewards/redemptions/pending').then(pendRes => {
+                  if (pendRes?.data?.redemptions) setRedemptions(pendRes.data.redemptions);
+                }).catch(e => console.error('Pending redemptions err', e)),
+                api.get('/users/students').then(studRes => {
+                  if (studRes?.data?.students) setStudents(studRes.data.students);
+                }).catch(e => console.error('Students err', e)),
+                api.get('/users/history/all').then(logsRes => {
+                  const logsData = logsRes?.data?.data || logsRes?.data || [];
+                  if (Array.isArray(logsData)) setAllLogs(logsData.map((tx: any) => ({ id: tx.id, date: tx.created_at, type: tx.type, amount: tx.amount, desc: tx.description, status: tx.status, user: tx.user })));
+                }).catch(e => console.error('History all err', e))
+              );
             }
-         }
-         
-         const hRes = await api.get('/users/history');
-         const historyData = hRes.data?.data || hRes.data || [];
-         const history = Array.isArray(historyData) ? historyData.map((tx: any) => ({
-             id: tx.id, date: tx.created_at, type: tx.type, amount: tx.amount, desc: tx.description, status: tx.status
-         })) : [];
-         
-         if (activeUser) setCurrentUser({ ...activeUser, history });
+            await Promise.allSettled(adminPromises);
+        }
+      } catch (err: any) {
+        console.error("Auth data err:", err);
+        // If /auth/me returns 401, the token is invalid/expired.
+        if (err.status === 401) {
+          setCurrentUser(null);
+        }
       }
-    } catch (err) {
-      console.error("Auth data err:", err);
+    } finally {
+      isRefreshing = false;
     }
   };
 
@@ -239,8 +264,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
     init();
     
-    // Poll data every 3s for realtime feel
-    const interval = setInterval(refreshData, 3000);
+    // Poll data every 10s — 3s was too aggressive and caused race conditions
+    // with JWT auth, especially on shared hosting with slower response times.
+    const interval = setInterval(refreshData, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -252,7 +278,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [currentUser?.id]);
 
 
-  const login = async (email: string, pass: string) => {
+  const login = (email: string, pass: string) => withLoading('login', async () => {
     try {
       const res = await api.post('/auth/login', { email, password: pass });
       localStorage.setItem('token', res.data.token.access_token);
@@ -260,12 +286,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       toast.success("Login berhasil.");
       return true;
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Login gagal");
+      // err.message now contains specific validation errors extracted by api.ts
+      // e.g. "Email atau password salah." instead of generic "Validasi gagal."
+      toast.error(err.message || "Login gagal");
       return false;
     }
-  };
+  });
 
-  const register = async (name: string, nim: string, email: string, pass: string, character: string) => {
+  const register = (name: string, nim: string, email: string, pass: string, character: string) => withLoading('register', async () => {
     try {
       const res = await api.post('/auth/register', { name, nim, email, password: pass, password_confirmation: pass, character });
       localStorage.setItem('token', res.data.token.access_token);
@@ -274,29 +302,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       toast.success("Registrasi berhasil!");
       return true;
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Registrasi gagal");
+      // err.message now contains specific validation errors extracted by api.ts
+      // e.g. "NIM sudah terdaftar." or "Email sudah terdaftar. Password minimal 8 karakter."
+      toast.error(err.message || "Registrasi gagal");
       return false;
     }
-  };
+  });
 
-  const logout = async () => {
+  const logout = () => {
     try {
-       await api.post('/auth/logout');
+       api.post('/auth/logout');
     } catch {}
     localStorage.removeItem('token');
     setCurrentUser(null);
   };
 
   
-  const updateSetting = async (key: string, value: string) => {
+  const updateSetting = (key: string, value: string) => withLoading('updateSetting', async () => {
     try {
       await api.post('/settings', { key, value });
       toast.success('Pengaturan disimpan');
       refreshData();
     } catch(e) { console.error(e); }
-  };
+  });
 
-  const setMachineMaxCapacity = async (max: number) => {
+  const setMachineMaxCapacity = (max: number) => withLoading('setMachineMaxCapacity', async () => {
     try {
       await api.patch(`/machines/${machine.id}/capacity`, { max_capacity: max });
       toast.success(`Max kapasitas alat diubah.`);
@@ -304,9 +334,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Gagal mengubah kapasitas.");
     }
-  };
+  });
 
-  const adminAddBottles = async (userId: string, machineId: string, bottles: number) => {
+  const adminAddBottles = (userId: string, machineId: string, bottles: number) => withLoading('adminAddBottles', async () => {
     try {
       await api.post(`/machines/${machineId}/deposit`, { user_id: userId, bottles });
       toast.success(`Berhasil menambahkan ${bottles} botol.`);
@@ -314,9 +344,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Gagal menambah botol.");
     }
-  };
+  });
 
-  const claimReceipt = async (code: string) => {
+  const claimReceipt = (code: string) => withLoading('claimReceipt', async () => {
     try {
       const res = await api.post(`/receipts/claim`, { claim_code: code });
       toast.success(res.data.message || `Klaim berhasil!`);
@@ -328,9 +358,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       toast.error(err.response?.data?.message || "Gagal klaim struk.");
       throw err;
     }
-  };
+  });
 
-  const acceptTicket = async (ticketId: string) => {
+  const acceptTicket = (ticketId: string) => withLoading(`acceptTicket_${ticketId}`, async () => {
     try {
       await api.patch(`/tickets/${ticketId}/accept`);
       toast.info("Tugas dikunci. Silakan menuju lokasi.");
@@ -338,9 +368,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Gagal menerima tiket");
     }
-  };
+  });
 
-  const completeTicket = async (ticketId: string) => {
+  const completeTicket = (ticketId: string) => withLoading(`completeTicket_${ticketId}`, async () => {
     try {
       await api.patch(`/tickets/${ticketId}/complete`);
       toast.success("Evakuasi Selesai.");
@@ -348,9 +378,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Gagal menyelesaikan");
     }
-  };
+  });
 
-  const redeemReward = async (_cost: number, rewardId: string) => {
+  const redeemReward = (_cost: number, rewardId: string) => withLoading(`redeemReward_${rewardId}`, async () => {
     try {
       await api.post(`/rewards/${rewardId}/redeem`);
       toast.info(`Permintaan penukaran berhasil dikirim.`);
@@ -358,9 +388,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Gagal menukar reward.");
     }
-  };
+  });
 
-  const updateRewardStatus = async (redemptionId: string, status: 'completed' | 'cancelled') => {
+  const updateRewardStatus = (redemptionId: string, status: 'completed' | 'cancelled') => withLoading(`updateReward_${redemptionId}`, async () => {
     try {
       await api.patch(`/rewards/redemptions/${redemptionId}`, { status });
       toast.success(`Status reward diperbarui.`);
@@ -368,9 +398,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Gagal memperbarui status.");
     }
-  };
+  });
 
-  const addReward = async (name: string, cost: number, desc: string) => {
+  const addReward = (name: string, cost: number, desc: string) => withLoading('addReward', async () => {
     try {
       await api.post('/rewards', { name, cost, description: desc, is_active: true });
       toast.success(`Reward "${name}" berhasil ditambahkan!`);
@@ -378,25 +408,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       toast.error("Gagal menambah reward");
     }
-  };
+  });
 
 
-  const addMachine = async (name: string, location: string, maxCapacity: number) => {
+  const addMachine = (name: string, location: string, maxCapacity: number) => withLoading('addMachine', async () => {
     try {
       await api.post('/machines', { name, location, max_capacity: maxCapacity });
       refreshData();
     } catch(e) { console.error(e); }
-  };
+  });
 
-  const deleteMachine = async (id: string) => {
+  const deleteMachine = (id: string) => withLoading(`deleteMachine_${id}`, async () => {
     try {
       if (!window.confirm('Yakin ingin menghapus mesin ini? Semua data terkait (termasuk tiket) bisa terhapus.')) return;
       await api.delete(`/machines/${id}`);
       refreshData();
     } catch(e) { console.error(e); }
-  };
+  });
 
-  const deleteReward = async (id: string) => {
+  const deleteReward = (id: string) => withLoading(`deleteReward_${id}`, async () => {
     try {
       await api.delete(`/rewards/${id}`);
       toast.success("Reward dihapus.");
@@ -404,37 +434,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       toast.error("Gagal menghapus reward");
     }
-  };
+  });
 
 
-  const addFaq = async (data: any) => {
+  const addFaq = (data: any) => withLoading('addFaq', async () => {
     try { await api.post('/faqs', data); toast.success('FAQ ditambahkan'); refreshData(); } 
     catch { toast.error('Gagal menambahkan FAQ'); }
-  };
-  const updateFaq = async (id: string, data: any) => {
+  });
+  const updateFaq = (id: string, data: any) => withLoading(`updateFaq_${id}`, async () => {
     try { await api.patch(`/faqs/${id}`, data); toast.success('FAQ diperbarui'); refreshData(); } 
     catch { toast.error('Gagal memperbarui FAQ'); }
-  };
-  const deleteFaq = async (id: string) => {
+  });
+  const deleteFaq = (id: string) => withLoading(`deleteFaq_${id}`, async () => {
     try { await api.delete(`/faqs/${id}`); toast.success('FAQ dihapus'); refreshData(); } 
     catch { toast.error('Gagal menghapus FAQ'); }
-  };
-  const addGuide = async (data: any) => {
+  });
+  const addGuide = (data: any) => withLoading('addGuide', async () => {
     try { await api.post('/guides', data); toast.success('Guide ditambahkan'); refreshData(); } 
     catch { toast.error('Gagal menambahkan Guide'); }
-  };
-  const updateGuide = async (id: string, data: any) => {
+  });
+  const updateGuide = (id: string, data: any) => withLoading(`updateGuide_${id}`, async () => {
     try { await api.patch(`/guides/${id}`, data); toast.success('Guide diperbarui'); refreshData(); } 
     catch { toast.error('Gagal memperbarui Guide'); }
-  };
-  const deleteGuide = async (id: string) => {
+  });
+  const deleteGuide = (id: string) => withLoading(`deleteGuide_${id}`, async () => {
     try { await api.delete(`/guides/${id}`); toast.success('Guide dihapus'); refreshData(); } 
     catch { toast.error('Gagal menghapus Guide'); }
-  };
+  });
 
   return (
     <AppContext.Provider value={{ 
-      currentUser, users, students, machine, tickets, stats, rewards, redemptions, allLogs, notifications, machines, faqs, guides,
+      loadingTasks, currentUser, users, students, machine, tickets, stats, rewards, redemptions, allLogs, notifications, machines, faqs, guides,
       login, register, logout, adminAddBottles, claimReceipt, setMachineMaxCapacity, 
       acceptTicket, completeTicket, redeemReward, updateRewardStatus, addReward, deleteReward, addFaq, updateFaq, deleteFaq, addGuide, updateGuide, deleteGuide, refreshData, setActiveMachine, addMachine, deleteMachine, settings, updateSetting, theme, toggleTheme 
     }}>
