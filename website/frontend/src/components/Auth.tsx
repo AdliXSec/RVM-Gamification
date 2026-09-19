@@ -15,6 +15,7 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
   const [nim, setNim] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [selectedChar, setSelectedChar] = useState(CHARACTERS[0]);
 
   const handleStudentLogin = async (e: React.FormEvent) => {
@@ -25,7 +26,22 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
   };
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPasswordError('');
     if (!name || !nim || !email || !password) return;
+    
+    if (password.length < 8) {
+      setPasswordError('Password minimal 8 karakter');
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setPasswordError('Password harus mengandung huruf besar');
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setPasswordError('Password harus mengandung angka');
+      return;
+    }
+
     const success = await register(name, nim, email, password, selectedChar);
     if (success) navigate('/');
   };
@@ -131,7 +147,8 @@ export default function Auth({ mode }: { mode: 'login' | 'register' }) {
               </div>
               <div className="space-y-2">
                   <label className="font-pixel text-[8px] text-slate-500 dark:text-slate-400">PASSWORD</label>
-                  <input className="pixel-input w-full px-3 py-2" type="password" placeholder="***" value={password} onChange={e => setPassword(e.target.value)} required />
+                  <input className="pixel-input w-full px-3 py-2" type="password" placeholder="***" value={password} onChange={e => { setPassword(e.target.value); setPasswordError(''); }} required />
+                  {passwordError && <p className="font-pixel-body text-red-500 text-xs mt-1">{passwordError}</p>}
               </div>
               
               <div className="space-y-2 pt-2 border-t-2 border-slate-200 dark:border-slate-700">

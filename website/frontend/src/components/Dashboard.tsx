@@ -30,6 +30,8 @@ export default function Dashboard() {
   const [volume, setVolume] = useState(0.2);
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
   
   // Level Up State
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -52,13 +54,41 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-      if (!isMuted) {
-        audioRef.current.play().catch(() => setIsMuted(true));
-      } else {
-        audioRef.current.pause();
+    const audioEl = audioRef.current;
+    if (!audioEl) return;
+
+    if (!audioCtxRef.current) {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        audioCtxRef.current = new AudioContextClass();
+        gainNodeRef.current = audioCtxRef.current.createGain();
+
+        if (!(audioEl as any)._hasSourceNode) {
+          try {
+            const source = audioCtxRef.current.createMediaElementSource(audioEl);
+            source.connect(gainNodeRef.current);
+            gainNodeRef.current.connect(audioCtxRef.current.destination);
+            (audioEl as any)._hasSourceNode = true;
+          } catch(e) {
+            console.warn("Audio source error:", e);
+          }
+        }
       }
+    }
+
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = volume;
+    }
+    
+    audioEl.volume = 1; // Native volume max, dictated by GainNode now
+
+    if (!isMuted) {
+      if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume();
+      }
+      audioEl.play().catch(() => setIsMuted(true));
+    } else {
+      audioEl.pause();
     }
   }, [isMuted, currentTrack, volume]);
 
